@@ -1,0 +1,53 @@
+---
+# Define the valid endpoints here. Usually, we will have one for production
+# and one for staging purposes.
+#
+# In case of Letsencrypt, you will need a different account key for each of
+# them.
+#
+endpoints:
+  production:
+    url: https://acme-v02.api.letsencrypt.org/directory
+    private_key: /etc/acme-deploy/accounts/production/private-key.pem
+    email_addr: certs@example.com
+  staging:
+    url: https://acme-staging-v02.api.letsencrypt.org/directory
+    private_key: /etc/acme-deploy/accounts/staging/private-key.pem
+    email_addr: certs@example.com
+
+# Define all the certificates you want here. Each certificate needs at least
+# a subject (CN), a private key and a path where to store it.
+#
+certificates:
+  ssl.example.com:
+    subject: ssl.example.com
+    san:
+      - ssl2.example.com
+      - ssl3.example.com
+    key: /etc/acme-deploy/keys/ssl.example.com.key
+    path: /etc/acme-deploy/certs/ssl.example.com.pem
+
+  secure.example.com:
+    subject: secure.example.com
+    key: /etc/acme-deploy/keys/secure.example.com.key
+    path: /etc/acme-deploy/certs/secure.example.com.pem
+
+# Define our web servers the challenge responses will be created at. For each
+# server, at least hostname and acme_path has to be specified. acme_path is
+# the path on the remote system where the file containing the challenge 
+# response will be put.
+#
+webservers:
+  frontend_web_1:
+    hostname: www1.example.com
+    username: root
+    ssh_port: 22
+    acme_path: /var/www/acme
+  frontend_web_2:
+    hostname: www2.example.com
+    username: root
+    ssh_port: 22
+    acme_path: /var/www/acme
+
+defaults:
+  endpoint: staging
