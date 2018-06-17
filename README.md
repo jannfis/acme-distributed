@@ -1,4 +1,4 @@
-# acme-distributed
+# Synopsis
 Simple command line ACME client for distributed certificate ordering. 
 
 # Status
