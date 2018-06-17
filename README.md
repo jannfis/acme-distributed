@@ -1,5 +1,5 @@
 # acme-distributed
-Simple command line ACME client for distributed certificate ordering. It's a rather dirty hack. Use on your own risk.
+Simple command line ACME client for distributed certificate ordering. It's a rather dirty hack. Use at your own risk.
 
 # Description
 **acme-distributed** is a simple ACME client for special use cases. It does not implement all functionality that other ACME clients offer. If you are just looking for an ordinary ACME client, please look elsewhere.
