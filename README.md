@@ -28,9 +28,9 @@ Basically, what **acme-distributed** does is similar to other ACME clients when 
 7. Retrieve the signed certificates from the ACME provider and store them on the local filesystem
 
 # Requirements
-**acme-distributed** requires
+**acme-distributed** uses the Ruby ACME implementation [https://github.com/unixcharles/acme-client](acme-client) by Charles Barbier and requires
 
-* Ruby 2.2 or higher
+* Ruby 2.1 or higher
 * The following ruby gems
   * acme-client
   * net-ssh
