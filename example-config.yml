@@ -37,7 +37,7 @@ certificates:
 # the path on the remote system where the file containing the challenge 
 # response will be put.
 #
-webservers:
+challenge_servers:
   frontend_web_1:
     hostname: www1.example.com
     username: root
