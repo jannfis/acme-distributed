@@ -114,3 +114,15 @@ webservers:
     acme_path: /var/www/acme
 
 ```
+# License & pull requests
+**acme-distributed** is put in the Public Domain under the [Unlicense](http://www.unlicense.org) terms. 
+
+Pull requests and patches are accepted as long as they are put in the public domain as well. For this purpose, please accompany your patches with the following statement:
+
+```
+I dedicate any and all copyright interest in this software to the
+public domain. I make this dedication for the benefit of the public at
+large and to the detriment of my heirs and successors. I intend this
+dedication to be an overt act of relinquishment in perpetuity of all
+present and future rights to this software under copyright law.
+```
