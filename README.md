@@ -101,7 +101,7 @@ If **username** is not given, the name of the local user will be used for SSH lo
 If **ssh_port** is not given, the standard value of 22 will be used.
 
 ```yaml
-webservers:
+challenge_servers:
   frontend_web_1:
     hostname: www1.example.com
     username: acme
