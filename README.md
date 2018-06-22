@@ -37,6 +37,8 @@ Basically, what **acme-distributed** does is similar to other ACME clients when 
   
 The host managing the certificates needs SSH access to the hosts serving the authorization requests. The only privilege required for the user is write access to the directory where the authorization requests are created.
 
+Furthermore, you will need a Letsencrypt account already setup, i.e. you need a valid, registered account key. **acme-distributed** does **not** offer registration functionality right now.
+
 # Configuration
 **acme-distributed** uses configuration files in simple YAML format. The following configurables are available:
 
