@@ -40,11 +40,17 @@ module Acme
   module Distributed
     DEBUG = true
 
+    VERSION = "0.0.1"
+
     @logger = Logger.new(STDOUT)
     @logger.level = Logger::INFO
 
     def self.logger
       @logger
+    end
+
+    def self.versioninfo
+      "Acme::Distributed version #{VERSION}"
     end
 
     class ConfigurationError < RuntimeError
@@ -495,6 +501,14 @@ options = {}
 
 OptionParser.new do |opts|
   opts.banner = "USAGE: #{$0} [options] <configuration>"
+
+  opts.on("-V", "--version", "Display version number and exit") do
+    STDERR.puts(Acme::Distributed.versioninfo)
+    STDERR.puts
+    STDERR.puts("This software is put into the Public Domain under the terms of Unlicense.")
+    STDERR.puts("Refer to https://www.unlicense.org for more details.")
+    exit 1
+  end
 
   opts.on("-e", "--endpoint <name>", String, "The endpoint to use for the request") do |env|
     options[:endpoint] = env
