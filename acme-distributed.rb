@@ -27,6 +27,7 @@
 # 
 
 # TODO: Better error handling
+# TODO: Make Acme::Client::Error::Timeout resilient
 
 require 'yaml'
 require 'net/ssh'
@@ -277,6 +278,7 @@ module Acme
             sleep(2)
             challenge.reload
           end
+          Acme::Distributed.logger.debug("Status of validation was: #{challenge.status}")
         end
       end
 
@@ -546,7 +548,11 @@ config.certificates.each do |cert|
   config.challenge_servers.each do |server|
     Acme::Distributed.logger.info("Connecting to challenge server #{server.name}")
     challenge.create(server)
-    challenge.validate!
+  end
+
+  challenge.validate!
+
+  config.challenge_servers.each do |server|
     server.remove_challenge
   end
 
