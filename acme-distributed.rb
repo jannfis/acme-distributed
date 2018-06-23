@@ -528,7 +528,7 @@ OptionParser.new do |opts|
     end
   end
 
-  opts.on("-L", "--log-level <level>", String, "Log level to use [DEBUG, INFO, WARN, ERROR]") do |level|
+  opts.on("-L", "--log-level <level>", String, "Log level to use [DEBUG, INFO, WARN, ERROR]. Default is INFO.") do |level|
     case level.downcase
     when "debug"
       Acme::Distributed.logger.level = Logger::DEBUG
