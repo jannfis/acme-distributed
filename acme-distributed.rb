@@ -556,6 +556,20 @@ Acme::Distributed.logger.info("Using ACME endpoint #{config.endpoint.url}")
 
 config.certificates.each do |cert|
 
+  if cert.path =~ /\{\{[a-z]+\}\}/
+    Acme::Distributed.logger.debug("Performing variable replacement in PEM path for certificate #{cert.name}")
+    _path = cert.path.sub("{{endpoint}}", config.endpoint_name)
+    cert.path = _path
+    Acme::Distributed.logger.debug("Final path: #{cert.path}")
+  end
+
+  if cert.key =~ /\{\{[a-z]+\}\}/
+    Acme::Distributed.logger.debug("Performing variable replacement in key path for certificate #{cert.name}")
+    _key = cert.key.sub("{{endpoint}}", config.endpoint_name)
+    cert.key = _key
+    Acme::Distributed.logger.debug("Final path: #{cert.key}")
+  end
+
   challenge = Acme::Distributed::Challenge.new(config.endpoint, cert, {})
   challenge.start!
 

@@ -18,19 +18,22 @@ endpoints:
 # Define all the certificates you want here. Each certificate needs at least
 # a subject (CN), a private key and a path where to store it.
 #
+# For key and path values, you can use the variable {{endpoint}} which will
+# get replaced by the actual endpoint name.
+#
 certificates:
   ssl.example.com:
     subject: ssl.example.com
     san:
       - ssl2.example.com
       - ssl3.example.com
-    key: /etc/acme-deploy/keys/ssl.example.com.key
-    path: /etc/acme-deploy/certs/ssl.example.com.pem
+    key: /etc/acme-deploy/{{endpoint}}/keys/ssl.example.com.key
+    path: /etc/acme-deploy/{{endpoint}}/certs/ssl.example.com.pem
 
   secure.example.com:
     subject: secure.example.com
-    key: /etc/acme-deploy/keys/secure.example.com.key
-    path: /etc/acme-deploy/certs/secure.example.com.pem
+    key: /etc/acme-deploy/{{endpoint}}/keys/secure.example.com.key
+    path: /etc/acme-deploy/{{endpoint}}/certs/secure.example.com.pem
 
 # Define our web servers the challenge responses will be created at. For each
 # server, at least hostname and acme_path has to be specified. acme_path is
