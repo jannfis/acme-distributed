@@ -73,7 +73,7 @@ You can define any number of certificates **acme-distributed** should handle. Ea
 
 The options **subject**, **key** and **path** are mandatory.
 
-You can use the special variable ```endpoint``` for the name of the endpoint in **key** and **path** values. If found, it will be replaced with the endpoint configuration name (e.g. **staging** or **production** if defined as in the example above).
+You can use the special variable ```{{endpoint}}``` for the name of the endpoint in **key** and **path** values. If found, it will be replaced with the endpoint configuration name (e.g. **staging** or **production** if defined as in the example above).
 
 ```yaml
 certificates:
