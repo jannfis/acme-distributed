@@ -73,6 +73,8 @@ You can define any number of certificates **acme-distributed** should handle. Ea
 
 The options **subject**, **key** and **path** are mandatory.
 
+You can use the special variable ```endpoint``` for the name of the endpoint in **key** and **path** values. If found, it will be replaced with the endpoint configuration name (e.g. **staging** or **production** if defined as in the example above).
+
 ```yaml
 certificates:
   ssl.example.com:
@@ -80,13 +82,13 @@ certificates:
     san:
       - ssl2.example.com
       - ssl3.example.com
-    key: /etc/acme-deploy/keys/ssl.example.com.key
-    path: /etc/acme-deploy/certs/ssl.example.com.pem
+    key: /etc/acme-deploy/{{endpoint}}/keys/ssl.example.com.key
+    path: /etc/acme-deploy/{{endpoint}}/certs/ssl.example.com.pem
 
   secure.example.com:
     subject: secure.example.com
-    key: /etc/acme-deploy/keys/secure.example.com.key
-    path: /etc/acme-deploy/certs/secure.example.com.pem
+    key: /etc/acme-deploy/{{endpoint}}/keys/secure.example.com.key
+    path: /etc/acme-deploy/{{endpoint}}/certs/secure.example.com.pem
 
 ```
 ## Challenge server configuration
