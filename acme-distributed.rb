@@ -280,9 +280,19 @@ module Acme
         @challenges.each do |challenge|
           Acme::Distributed.logger.debug("Initiating challenge validation for DNS #{self.names}")
           challenge.request_validation
+          num_timeouts = 0
           while challenge.status == 'pending'
             sleep(2)
-            challenge.reload
+            begin
+              challenge.reload
+            rescue Acme::Client::Error::Timeout
+              Acme::Distributed.logger.debug("Timeout from ACME endpoint")
+              num_timeouts += 1
+              if num_timeouts > 5
+                Acme::Distributed.logger.error("Aborting after 5th timeout from ACME endpoint")
+                break
+              end
+            end
           end
           Acme::Distributed.logger.debug("Status of validation was: #{challenge.status}")
         end
