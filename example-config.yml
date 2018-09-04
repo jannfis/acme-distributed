@@ -38,17 +38,20 @@ certificates:
 # Define our web servers the challenge responses will be created at. For each
 # server, at least hostname and acme_path has to be specified. acme_path is
 # the path on the remote system where the file containing the challenge 
-# response will be put.
+# response will be put. Make sure that the specified user on the destination
+# system has write permission to the directory specified by acme_path. Do
+# yourself a favor and do not use the root user for connecting to the remote
+# system.
 #
 challenge_servers:
   frontend_web_1:
     hostname: www1.example.com
-    username: root
+    username: acme
     ssh_port: 22
     acme_path: /var/www/acme
   frontend_web_2:
     hostname: www2.example.com
-    username: root
+    username: acme
     ssh_port: 22
     acme_path: /var/www/acme
 
