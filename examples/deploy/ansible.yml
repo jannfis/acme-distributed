@@ -1,0 +1,44 @@
+# Example tasks for deploying the letsencrypt issued certificate to your remote
+# system(s).
+#
+# This is just for reference. Do not copy & paste into your Ansible runbook.
+#
+# Steps involved:
+# - Ensure that certificate and private key are up-to-date on remote system(s)
+# - Assemble a final PEM file from certificate and key on the remote system(s)
+# - Register a handler to reload the new certificate
+#
+- name: Ensure current TLS certificates are installed at assemble directory
+  copy:
+    src: "/etc/acme-deploy/production/certs/{{ item }}.pem"
+    dest: "/etc/ssl/source/{{ item }}/{{ item }}.pem"
+    owner: root
+    group: wheel
+    mode: 0644
+  with_items:
+    - ssl.example.com
+    - secure.example.com
+
+- name: Ensure current private keys are installed at assemble directory
+  copy:
+    src: "/etc/acme-deploy/production/keys/{{ item }}.key"
+    dest: "/etc/ssl/source/{{ item }}/{{ item }}.key"
+    owner: root
+    group: wheel
+    mode: 0600
+  with_items:
+    - ssl.example.com
+    - secure.example.com
+
+- name: Assemble final PEM from cert and key for haproxy usage
+  assemble:
+    src: "/etc/ssl/source/{{ item }}/"
+    dest: "/etc/ssl/private/{{ item }}.pem"
+    owner: root
+    group: wheel
+    mode: 0600
+  with_items:
+    - ssl.example.com
+    - secure.example.com
+  notify: handler_restart_https_service
+
