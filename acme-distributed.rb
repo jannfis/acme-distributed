@@ -580,6 +580,12 @@ config.certificates.each do |cert|
     Acme::Distributed.logger.debug("Final path: #{cert.key}")
   end
 
+  # The key for certificate request has to exist
+  if not File.exists?(cert.key)
+    Acme::Distributed.logger.warn("Key file #{cert.key} does not exist, skipping request for #{cert.name}")
+    next
+  end
+
   challenge = Acme::Distributed::Challenge.new(config.endpoint, cert, {})
   challenge.start!
 
