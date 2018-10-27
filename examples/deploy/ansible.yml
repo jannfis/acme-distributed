@@ -1,7 +1,7 @@
 # Example tasks for deploying the letsencrypt issued certificate to your remote
 # system(s).
 #
-# This is just for reference. Do not copy & paste into your Ansible runbook.
+# This is just for reference. Do not copy & paste into your Ansible playbook.
 #
 # Steps involved:
 # - Ensure that certificate and private key are up-to-date on remote system(s)
