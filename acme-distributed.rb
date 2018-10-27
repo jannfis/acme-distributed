@@ -566,6 +566,8 @@ Acme::Distributed.logger.info("Using ACME endpoint #{config.endpoint.url}")
 
 config.certificates.each do |cert|
 
+  Acme::Distributed.logger.info("Processing started for entry '#{cert.name}'")
+
   if cert.path =~ /\{\{[a-z]+\}\}/
     Acme::Distributed.logger.debug("Performing variable replacement in PEM path for certificate #{cert.name}")
     _path = cert.path.sub("{{endpoint}}", config.endpoint_name)
@@ -610,6 +612,8 @@ config.certificates.each do |cert|
   else
     Acme::Distributed.logger.error("Challenges couldn't be completed, check your configuration and logs.")
   end
+
+  Acme::Distributed.logger.info("Processing finished for entry '#{cert.name}'")
 
 end
 
