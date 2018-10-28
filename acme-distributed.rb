@@ -35,6 +35,7 @@ require 'acme-client'
 require 'optparse'
 require 'logger'
 require 'pp'
+require 'openssl'
 
 module Acme
   module Distributed
@@ -236,6 +237,14 @@ module Acme
       def pem_data=(value)
         @pem_data = value
       end
+
+      def renew_days
+        @options['renew_days']
+      end
+
+      def renew_days=(value)
+        @renew_days['renew_days'] = value.to_i
+      end
     end
 
     class Challenge
@@ -377,6 +386,12 @@ module Acme
           self.endpoint_name = options[:endpoint]
         end
 
+        if not options[:renew_days]
+          if config["defaults"].is_a?(Hash) and config["defaults"]["renew_days"]
+            self.renew_days = config["defaults"]["renew_days"]
+          end
+        end
+
         if not config["endpoints"][self.endpoint_name]
           Acme::Distributed.logger.error("Endpoint '#{self.endpoint_name}' is not configured.")
           Acme::Distributed.logger.error("Available endpoints: " + config["endpoints"].keys.join(", "))
@@ -416,6 +431,22 @@ module Acme
 
       def challenge_servers
         @challenge_servers
+      end
+
+      def renew_days=(value)
+        @renew_days = value.to_i
+      end
+
+      def renew_days
+        @renew_days
+      end
+
+      def default_renew_days=(value)
+        @default_renew_days = value.to_i
+      end
+
+      def default_renew_days
+        @default_renew_days
       end
 
       private
@@ -470,6 +501,9 @@ module Acme
           if cert["san"] and not cert["san"].is_a?(Array)
             raise Acme::Distributed::ConfigError, "Certificate option 'san' for #{key} not valid (must be array)."
           end
+          if cert["renew_days"] and not cert["renew_days"].is_a?(Fixnum)
+            raise Acme::Distributed::ConfigError, "Certificate option 'renew_days' for #{key} not valid (must be numeric)."
+          end
           @certificates << Certificate.new(key, cert)
           Acme::Distributed.logger.debug("Configured certificate '#{key}': " + cert.to_s)
         end
@@ -508,6 +542,7 @@ end # Acme
 
 
 options = {}
+
 
 OptionParser.new do |opts|
   opts.banner = "USAGE: #{$0} [options] <configuration>"
@@ -551,6 +586,10 @@ OptionParser.new do |opts|
     end
   end
 
+  opts.on("-r", "--renew-expires <days>", Fixnum, "Only renew certificates which have a remaining validity less than <days> days") do |days|
+    options[:renew_days] = days
+  end
+
   options[:dry_run] = false
   opts.on("-n", "--dry-run", "Dry-run mode, does not perform any actual change.") do
     options[:dry_run] = true
@@ -590,6 +629,35 @@ config.certificates.each do |cert|
     _key = cert.key.sub("{{endpoint}}", config.endpoint_name)
     cert.key = _key
     Acme::Distributed.logger.debug("Final path: #{cert.key}")
+  end
+
+  # Check for certificate expiration date, if the certificate already exists.
+  # Depending on the configuration, we may skip the renewal.
+  #
+  # The order of values for renewal days is:
+  # 1. Command line argument -r as override
+  # 2. Certificate configuration
+  # 3. Default configuration
+  #
+  if File.exists?(cert.path)
+    Acme::Distributed.logger.debug("Checking whether #{cert.name} needs update already")
+    _cert = OpenSSL::X509::Certificate.new(File.read(cert.path))
+    _expires = (_cert.not_after - Time.now).to_i / 86400
+
+    if options[:renew_days]
+      _renew_days = options[:renew_days]
+    elsif cert.renew_days
+      _renew_days = cert.renew_days
+    elsif config.renew_days
+      _renew_days = config.renew_days
+    end
+    #Acme::Distributed.logger.debug("renew_days for #{cert.name} is #{_renew_days}")
+    Acme::Distributed.logger.debug("Certificate expires: #{_cert.not_after}, that is #{_expires} days from now.")
+
+    if _expires > _renew_days
+      Acme::Distributed.logger.info("Skipping certificate #{cert.name} because it's not due for renewal yet (Expires in #{_expires} days, but earliest renew date is #{_renew_days} days from expiry).")
+      next
+    end
   end
 
   # The key for certificate request has to exist

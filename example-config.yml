@@ -29,11 +29,13 @@ certificates:
       - ssl3.example.com
     key: /etc/acme-deploy/{{endpoint}}/keys/ssl.example.com.key
     path: /etc/acme-deploy/{{endpoint}}/certs/ssl.example.com.pem
+    renew_days: 30
 
   secure.example.com:
     subject: secure.example.com
     key: /etc/acme-deploy/{{endpoint}}/keys/secure.example.com.key
     path: /etc/acme-deploy/{{endpoint}}/certs/secure.example.com.pem
+    renew_days: 30
 
 # Define our web servers the challenge responses will be created at. For each
 # server, at least hostname and acme_path has to be specified. acme_path is
@@ -55,5 +57,7 @@ challenge_servers:
     ssh_port: 22
     acme_path: /var/www/acme
 
+# Set some sane defaults for your environment here.
 defaults:
   endpoint: staging
+  renew_days: 30
