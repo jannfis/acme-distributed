@@ -551,6 +551,11 @@ OptionParser.new do |opts|
     end
   end
 
+  options[:dry_run] = false
+  opts.on("-n", "--dry-run", "Dry-run mode, does not perform any actual change.") do
+    options[:dry_run] = true
+  end
+
 end.parse!
 
 if ARGV.length != 1
@@ -565,6 +570,11 @@ config = Acme::Distributed::Config.new(config_file, options)
 Acme::Distributed.logger.info("Using ACME endpoint #{config.endpoint.url}")
 
 config.certificates.each do |cert|
+
+  if options[:certificates].length > 0 and not options[:certificates].include?(cert.name)
+    Acme::Distributed.logger.info("Skipping processing of #{cert.name} due to --certificates restriction.")
+    next
+  end
 
   Acme::Distributed.logger.info("Processing started for entry '#{cert.name}'")
 
@@ -585,32 +595,35 @@ config.certificates.each do |cert|
   # The key for certificate request has to exist
   if not File.exists?(cert.key)
     Acme::Distributed.logger.warn("Key file #{cert.key} does not exist, skipping request for #{cert.name}")
-    next
-  end
-
-  challenge = Acme::Distributed::Challenge.new(config.endpoint, cert, {})
-  challenge.start!
-
-  config.challenge_servers.each do |server|
-    Acme::Distributed.logger.info("Connecting to challenge server #{server.name}")
-    challenge.create(server)
-  end
-
-  challenge.validate!
-
-  config.challenge_servers.each do |server|
-    server.remove_challenge
-  end
-
-  if challenge.valid?
-    Acme::Distributed.logger.info("Successfully completed all challenges. Certificate request now in progress...")
-    challenge.finish!
-    Acme::Distributed.logger.info("Writing PEM data to #{cert.path}")
-    File.open(cert.path, "w") do |f|
-      f.write(cert.pem_data)
-    end
   else
-    Acme::Distributed.logger.error("Challenges couldn't be completed, check your configuration and logs.")
+    if not options[:dry_run]
+      challenge = Acme::Distributed::Challenge.new(config.endpoint, cert, {})
+      challenge.start!
+
+      config.challenge_servers.each do |server|
+        Acme::Distributed.logger.info("Connecting to challenge server #{server.name}")
+        challenge.create(server)
+      end
+
+      challenge.validate!
+
+      config.challenge_servers.each do |server|
+        server.remove_challenge
+      end
+
+      if challenge.valid?
+        Acme::Distributed.logger.info("Successfully completed all challenges. Certificate request now in progress...")
+        challenge.finish!
+        Acme::Distributed.logger.info("Writing PEM data to #{cert.path}")
+        File.open(cert.path, "w") do |f|
+          f.write(cert.pem_data)
+        end
+      else
+        Acme::Distributed.logger.error("Challenges couldn't be completed, check your configuration and logs.")
+      end
+    else
+      Acme::Distributed.logger.info("Not really processing entry #{cert.name} due to --dry-run")
+    end
   end
 
   Acme::Distributed.logger.info("Processing finished for entry '#{cert.name}'")
