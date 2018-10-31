@@ -4,6 +4,19 @@
 # Status
 It's a rather dirty hack right now. Use at your own risk.
 
+# Synopsis
+
+    USAGE: ./acme-distributed.rb [options] <configuration>
+      -V, --version                    Display version number and exit
+      -e, --endpoint <name>            The endpoint to use for the request
+      -c <cert1[, cert2[, ...]]>,      Certificates to request
+         --certificates
+      -s <server1,[, server2[, ...]]>, Servers to create challenge answers on
+         --servers
+      -L, --log-level <level>          Log level to use [DEBUG, INFO, WARN, ERROR]. Default is INFO.
+      -r, --renew-expires <days>       Only renew certificates which have a remaining validity less than <days> days
+      -n, --dry-run                    Dry-run mode, does not perform any actual change.
+
 # Description
 **acme-distributed** is a simple ACME client for special use cases. It does not implement all functionality that other ACME clients offer. If you are just looking for an ordinary ACME client, please look elsewhere.
 
