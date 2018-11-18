@@ -14,7 +14,7 @@ It's a rather dirty hack right now. Use at your own risk.
       -s <server1,[, server2[, ...]]>, Servers to create challenge answers on
          --servers
       -L, --log-level <level>          Log level to use [DEBUG, INFO, WARN, ERROR]. Default is INFO.
-      -r, --renew-expires <days>       Only renew certificates which have a remaining validity less than <days> days
+      -r, --remaining-lifetime <days>  Only renew certificates which have a remaining validity less than <days> days
       -n, --dry-run                    Dry-run mode, does not perform any actual change.
 
 # Description
@@ -83,6 +83,7 @@ You can define any number of certificates **acme-distributed** should handle. Ea
 * **key** specifies the (local) path to the private key used for generating the CSR and for the final certificate
 * **path** specifies the (local) path the final certificate will be stored at in PEM format
 * **san** specifies a list of additional DNS names the certificate shall be valid for
+* **renew_days** renew certificate only if its lifetime is less than specified number of days (defaults to 30)
 
 The options **subject**, **key** and **path** are mandatory.
 
