@@ -274,6 +274,7 @@ module Acme
         Acme::Distributed.logger.info("Initiating ACME challenge for certificate with names: " + @cert.names.to_s + " at endpoint #{@endpoint.uri}")
         keyobj = OpenSSL::PKey::RSA.new(File.read(@endpoint.private_key))
         @acme_client = Acme::Client.new(private_key: keyobj, directory: @endpoint.uri)
+        Acme::Distributed.logger.debug("Using Key ID: " + @acme_client.kid)
         @order = @acme_client.new_order(identifiers: @cert.names)
         authorizations = @order.authorizations
         @challenges = []
