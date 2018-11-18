@@ -4,6 +4,19 @@
 # Status
 It's a rather dirty hack right now. Use at your own risk.
 
+# Synopsis
+
+    USAGE: ./acme-distributed.rb [options] <configuration>
+      -V, --version                    Display version number and exit
+      -e, --endpoint <name>            The endpoint to use for the request
+      -c <cert1[, cert2[, ...]]>,      Certificates to request
+         --certificates
+      -s <server1,[, server2[, ...]]>, Servers to create challenge answers on
+         --servers
+      -L, --log-level <level>          Log level to use [DEBUG, INFO, WARN, ERROR]. Default is INFO.
+      -r, --renew-expires <days>       Only renew certificates which have a remaining validity less than <days> days
+      -n, --dry-run                    Dry-run mode, does not perform any actual change.
+
 # Description
 **acme-distributed** is a simple ACME client for special use cases. It does not implement all functionality that other ACME clients offer. If you are just looking for an ordinary ACME client, please look elsewhere.
 
@@ -12,7 +25,7 @@ The corner case implemented by this client is the separation of certificate orde
 * You can not have (or do not want) the ACME client on your web server(s) for whatever reasons
 * Your webservers cannot initiate connections to the outside world
 * You do not want your private account key on your web servers
-* You want to centralize your LE certficate management and not have multiple hosts (i.e. your webservers) being responsible for that
+* You want to centralize your Let's Encrypt certficate management and not have multiple hosts (i.e. your webservers) being responsible for that
 
 Please note that **acme-distributed** will not (nor will ever) deploy any certificates to your servers. This task is left to whatever configuration management or provisioning tools you might have in place.
 
@@ -37,7 +50,7 @@ Basically, what **acme-distributed** does is similar to other ACME clients when 
   
 The host managing the certificates needs SSH access to the hosts serving the authorization requests. The only privilege required for the user is write access to the directory where the authorization requests are created.
 
-Furthermore, you will need a Letsencrypt account already setup, i.e. you need a valid, registered account key. **acme-distributed** does **not** offer registration functionality right now.
+Furthermore, you will need a Let's Encrypt account already setup, i.e. you need a valid, registered account key. **acme-distributed** does **not** offer registration functionality right now.
 
 # Configuration
 **acme-distributed** uses configuration files in simple YAML format. The following configurables are available:
