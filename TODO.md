@@ -1,21 +1,21 @@
-= Things acme-distributed still needs
+# Things acme-distributed still needs
 
-== Functionality
+## Functionality
 
 - Implement DNS challenges
 - Group servers for mapping certain certificates to certain challenge servers
 - ACME account management (new/modify/delete account)
 
-== Cosmetics
+## Cosmetics
 
 - Increase comment-to-code ration
 
-== Packaging
+## Packaging
 
 - Put code in separate files instead of one monolithic script
 - Create & publish a Ruby gem
 
-== Known bugs
+## Known bugs
 
 - Under some circumstances, old challenge files can remain on your web server(s)
 - Error handling is insufficient
