@@ -39,9 +39,8 @@ require 'openssl'
 
 module Acme
   module Distributed
-    DEBUG = true
 
-    VERSION = "0.0.1"
+    VERSION = "0.1.0"
 
     @logger = Logger.new(STDOUT)
     @logger.level = Logger::INFO
@@ -502,7 +501,7 @@ module Acme
           if cert["san"] and not cert["san"].is_a?(Array)
             raise Acme::Distributed::ConfigError, "Certificate option 'san' for #{key} not valid (must be array)."
           end
-          if cert["renew_days"] and not cert["renew_days"].is_a?(Fixnum)
+          if cert["renew_days"] and not cert["renew_days"].is_a?(Integer)
             raise Acme::Distributed::ConfigError, "Certificate option 'renew_days' for #{key} not valid (must be numeric)."
           end
           @certificates << Certificate.new(key, cert)
@@ -587,7 +586,7 @@ OptionParser.new do |opts|
     end
   end
 
-  opts.on("-r", "--renew-expires <days>", Fixnum, "Only renew certificates which have a remaining validity less than <days> days") do |days|
+  opts.on("-r", "--renew-expires <days>", Integer, "Only renew certificates which have a remaining validity less than <days> days") do |days|
     options[:renew_days] = days
   end
 
