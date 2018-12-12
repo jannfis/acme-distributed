@@ -13,6 +13,7 @@ class Acme::Distributed::Client
 
     @logger = Acme::Distributed::Logger.new(options.log_level)
     @config = Acme::Distributed::Config.new(config_path, options)
+    @options = options
 
     @endpoint = set_endpoint(options)
     if not @endpoint.key_exist?
@@ -52,7 +53,7 @@ class Acme::Distributed::Client
           @logger.debug("Considering cert='#{certificate.name}', remaining='#{certificate.remaining_lifetime}', renew_days='#{certificate.renew_days}' for renewal")
           certificates << certificate
         else
-          @logger.debug("Won't process cert='#{certificate.name}', remaining='#{certificate.remaining_lifetime}', renew_days='#{certificate.renew_days}'.")
+          @logger.info("Won't process cert='#{certificate.name}', remaining='#{certificate.remaining_lifetime}', renew_days='#{certificate.renew_days}'.")
         end
       else
         @logger.debug("Skipping #{certificate.name} from processing due to name restrictions.")
@@ -67,6 +68,7 @@ class Acme::Distributed::Client
     # This may raise Acme::Distributed::ChallengeError
     #
     certificates.each do |certificate|
+      @logger.info("Processing certificate name='#{certificate.name}', remaining lifetime='#{certificate.remaining_lifetime}' days.")
 
       # Some checks beforehand. Can we write the PEM? Can we read the key?
       #
@@ -75,6 +77,11 @@ class Acme::Distributed::Client
         next
       elsif not certificate.key_exist?
         @logger.error("Private key file for certificate='#{certificate.name}' at path='#{certificate.key}' not readable, skip this certificate.")
+        next
+      end
+
+      if @options.dry_run?
+        @logger.info("Option --dry-run was specified, won't perform ACME requests.")
         next
       end
 
