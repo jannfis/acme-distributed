@@ -29,6 +29,11 @@ The corner case implemented by this client is the separation of certificate orde
 
 Please note that **acme-distributed** will not (nor will ever) deploy any certificates to your servers. This task is left to whatever configuration management or provisioning tools you might have in place.
 
+# Installation
+
+* Clone the repository to a convinient location on your system
+* Run ```bundler install``` to install dependencies
+
 # How it works
 Basically, what **acme-distributed** does is similar to other ACME clients when requesting certificates, except that it places the http-01 authorization challenges not on the local machine, but on each of the configured remote servers:
 
@@ -113,7 +118,9 @@ The list of servers which will handle the http-01 authorization challenges are d
 * **ssh_port** specifies the TCP port the SSH daemon on the server listens to
 * **acme_path** specifies the path on the remote server where authorization challenges are put
 
-The **hostname** and **acme_path** options are mandatory.
+The **hostname** and **acme_path** options are mandatory. 
+
+Please note that only the base name of the path sent by the ACME challenge will be used when creating the challenge files on the remote servers -- the ```/.well-known/acme``` part will be cut off. So you either have an alias configured on your web servers pointing to **acme_path** or you include ```/.well-known/acme``` in **acme_path** setting. In the example below, the web server is configured with an alias ```/.well-known/acme -> /var/www/acme``` for simplicity.
 
 If **username** is not given, the name of the local user will be used for SSH login.
 If **ssh_port** is not given, the standard value of 22 will be used.
