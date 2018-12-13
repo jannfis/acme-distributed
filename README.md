@@ -119,16 +119,13 @@ certificates:
 The list of servers which will handle the http-01 authorization challenges are defined here. You can define any number of servers you wish, and you should define all servers here that will have the certificates deployed (e.g. those that will terminate SSL requests for the FQDNs specified in the configured certificates.)
 
 * **hostname** specifies the DNS hostname (or IP address) of the server to connect to via SSH
-* **username** specifies the remote username to use
+* **username** specifies the remote username to use for authentication
 * **ssh_port** specifies the TCP port the SSH daemon on the server listens to
 * **acme_path** specifies the path on the remote server where authorization challenges are put
 
-The **hostname** and **acme_path** options are mandatory. 
+All settings above are mandatory. 
 
 Please note that only the base name of the path sent by the ACME challenge will be used when creating the challenge files on the remote servers -- the ```/.well-known/acme``` part will be cut off. So you either have an alias configured on your web servers pointing to **acme_path** or you include ```/.well-known/acme``` in **acme_path** setting. In the example below, the web server is configured with an alias ```/.well-known/acme -> /var/www/acme``` for simplicity.
-
-If **username** is not given, the name of the local user will be used for SSH login.
-If **ssh_port** is not given, the standard value of 22 will be used.
 
 ```yaml
 challenge_servers:
