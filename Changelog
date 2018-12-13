@@ -1,4 +1,6 @@
 master
+- first steps towards modular connectors framework
+- rename "challenge_servers" to "connectors"
 - improve SSH connection & error handling
 - also test SSH connections in dry run mode
 
