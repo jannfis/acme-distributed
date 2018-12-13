@@ -1,5 +1,5 @@
 master
-- reuse existing SSH connections
+- improve SSH connection & error handling
 - also test SSH connections in dry run mode
 
 v0.2.0 - 2018-12-13
