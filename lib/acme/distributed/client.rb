@@ -3,7 +3,6 @@ require 'acme/distributed/config'
 require 'acme/distributed/challenge'
 
 require 'acme/distributed/connector'
-require 'acme/distributed/connector/http_file'
 
 require 'acme/distributed/configuration_error'
 
@@ -24,7 +23,7 @@ class Acme::Distributed::Client
     end
 
     @logger.info("Using endpoint name='#{@endpoint.name}', uri='#{@endpoint.uri}'")
-    @logger.info("Configured #{@config.servers.keys.length} challenge servers.")
+    @logger.info("Configured #{@config.connectors.keys.length} connectors.")
 
     if not options.renew_days
       if not @config.default(:renew_days)
@@ -65,12 +64,14 @@ class Acme::Distributed::Client
 
     @logger.info("Considered #{certificates.length} (from a total of #{@config.certificates.length}) certificates for renewal/request.")
 
-    # Connect to all required servers for this challenge, when we considered at
-    # least 1 certificate for renewal and regardless of run mode.
+    # Connect to all required connectors for this challenge, when we considered
+    # at least 1 certificate for renewal and regardless of run mode.
     #
     if certificates.length > 0
-      @config.servers.each do |server_name, server|
-        server.connect!
+      certificates.each do |certificate|
+        @config.connectors[certificate.connector_type].each do |connector_name, connector|
+          connector.connect!
+        end
       end
     end
 
@@ -108,16 +109,16 @@ class Acme::Distributed::Client
 
         @logger.debug("#{challenge.authorizations.length} authorizations need to be fullfilled for this certificate.")
 
-        cleanup_servers = []
+        cleanup_connectors = []
 
         # Create challenge responses for each authorization request on all
-        # servers.
+        # connectors.
         #
         challenge.authorizations.each do |authorization|
-          @config.servers.each do |server_name, server|
+          @config.connectors[certificate.connector_type].each do |connector_name, connector|
             begin
-              server.create_challenge(authorization.http.filename, authorization.http.file_content)
-              cleanup_servers << server
+              connector.create_challenge(authorization.http.filename, authorization.http.file_content)
+              cleanup_connectors << connector
             rescue Acme::Distributed::ServerError => msg
               @logger.error(msg)
             end
@@ -135,10 +136,10 @@ class Acme::Distributed::Client
 
         # Remove all challenge files that we have created.
         #
-        if cleanup_servers.length > 0
+        if cleanup_connectors.length > 0
           errors = 0
-          cleanup_servers.each do |server|
-            errors = server.remove_all_challenges
+          cleanup_connectors.each do |connector|
+            errors = connector.remove_all_challenges
           end
           if errors > 0
             @logger.warn("While removing challenges, #{errors} errors where encountered. Please check manually.")
@@ -164,9 +165,11 @@ class Acme::Distributed::Client
       end 
     end
 
-    @config.servers.each do |server_name, server|
-      if server.connected?
-        server.disconnect!
+    certificates.each do |certificate|
+      @config.connectors[certificate.connector_type].each do |connector_name, connector|
+        if connector.connected?
+          connector.disconnect!
+        end
       end
     end
   end

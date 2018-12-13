@@ -5,17 +5,26 @@ require 'acme/distributed/logger'
 require 'acme/distributed/endpoint'
 require 'acme/distributed/certificate'
 
+require 'acme/distributed/connector'
+
 class Acme::Distributed::Config
 
   # List of required keys in configuration YAML
   #
-  REQUIRED_CONFIG_KEYS = [ "endpoints", "certificates", "challenge_servers" ]
+  REQUIRED_CONFIG_KEYS = [ "endpoints", "certificates", "connectors" ]
 
   # List of valid keys for defaults section 
   #
   VALID_DEFAULT_KEYS = {
     "endpoint" => String,
-    "renew_days" => Integer
+    "renew_days" => Integer,
+    "connector_type" => String
+  }
+
+  # List of valid challenge types and their implementation classes.
+  #
+  VALID_CHALLENGE_TYPES = {
+    "ssh_http_file" => Acme::Distributed::Connector::SshHttpFile
   }
 
   # Load configuration from file
@@ -42,7 +51,7 @@ class Acme::Distributed::Config
 
     @config[:endpoints] = configure_endpoints(yaml)
     @config[:certificates] = configure_certificates(yaml)
-    @config[:servers] = configure_servers(yaml)
+    @config[:connectors] = configure_connectors(yaml)
     
   end
 
@@ -85,12 +94,12 @@ class Acme::Distributed::Config
     @config[:certificates] = certificates
   end
 
-  def servers
-    @config[:servers]
+  def connectors
+    @config[:connectors]
   end
   
-  def servers=(servers)
-    @config[:servers] = servers
+  def connectors=(connectors)
+    @config[:connectors] = connectors
   end
 
   def options
@@ -101,6 +110,15 @@ class Acme::Distributed::Config
   #
   def default(key)
     @defaults[key.to_s]
+  end
+
+  # Return the class for a given connector type
+  def connector_class(connector_type)
+    if VALID_CHALLENGE_TYPES[connector_type]
+      return VALID_CHALLENGE_TYPES[connector_type]
+    else
+      raise Acme::Distributed::ConfigurationError, "Invalid connector type: #{connector_type}, no connector class defined."
+    end
   end
 
   private
@@ -140,17 +158,29 @@ class Acme::Distributed::Config
     certificates
   end
 
-  # Configure all servers from the YAML definition
+  # Configure all connectors from the YAML definition. The configuration will
+  # be stored in a two-level hash, with the top level being the challenge type
+  # the connector implements and the second level the name of the connector.
   #
-  def configure_servers(yaml)
-    servers = {}
-    yaml['challenge_servers'].keys.each do |server_name|
-      @logger.debug("Processing configuration for challenge server '#{server_name}'")
-      server = Acme::Distributed::Connector::HTTPFile.new(server_name, yaml['challenge_servers'][server_name], @options, @defaults)
-      servers[server.name] = server
-      @logger.debug("Added challenge server name='#{server.name}', hostname='#{server.hostname}'")
+  def configure_connectors(yaml)
+    connectors = {}
+
+    VALID_CHALLENGE_TYPES.keys.each do |name|
+      connectors[name] = {}
     end
-    servers
+
+    yaml['connectors'].each do |connector_name, config|
+      @logger.debug("Processing configuration for connector '#{connector_name}'")
+      if not config['type']
+        raise Acme::Distributed::ConfigurationError, "Connector #{connector_name} has no type attribute"
+      end
+      connector_class = self.connector_class(config['type'])
+      @logger.debug("Instantiating new connector from class #{connector_class.to_s}")
+      connector = connector_class.new(connector_name, config, @options, @defaults)
+      connectors[config['type']][connector.name] = connector
+      @logger.debug("Added connector name='#{connector.name}', hostname='#{connector.hostname}'")
+    end
+    return connectors
   end
 
   # Validate the configuration that was loaded from the YAML. 
@@ -186,6 +216,7 @@ class Acme::Distributed::Config
   end
 
   def validate_defaults!(config)
+
   end
 
 end

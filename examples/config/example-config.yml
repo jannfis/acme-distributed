@@ -45,19 +45,22 @@ certificates:
 # yourself a favor and do not use the root user for connecting to the remote
 # system.
 #
-challenge_servers:
+connectors:
   frontend_web_1:
     hostname: www1.example.com
     username: acme
     ssh_port: 22
     acme_path: /var/www/acme
+    type: ssh_http_file
   frontend_web_2:
     hostname: www2.example.com
     username: acme
     ssh_port: 22
     acme_path: /var/www/acme
+    type: ssh_http_file
 
 # Set some sane defaults for your environment here.
 defaults:
   endpoint: staging
   renew_days: 30
+  type: ssh_http_file

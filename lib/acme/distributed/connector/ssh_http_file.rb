@@ -7,7 +7,7 @@ require 'acme/distributed/configuration_error'
 require 'acme/distributed/server_error'
 require 'acme/distributed/connector/ssh'
 
-class Acme::Distributed::Connector::HTTPFile < Acme::Distributed::Connector::SSH
+class Acme::Distributed::Connector::SshHttpFile < Acme::Distributed::Connector::SSH
 
   # These keys must exist in the config hash
   REQUIRED_CONFIG_KEYS = [ "hostname", "username", "acme_path" ]

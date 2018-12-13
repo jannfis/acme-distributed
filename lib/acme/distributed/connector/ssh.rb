@@ -37,6 +37,7 @@ class Acme::Distributed::Connector::SSH < Acme::Distributed::Connector::Base
   def disconnect!
     @logger.info("Terminating SSH connection to server name=#{@name}")
     @ssh.close
+    @ssh = nil
   end
 
   def connected?
