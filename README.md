@@ -4,6 +4,11 @@
 # Status
 **acme-distributed** is work in progress. I use it as my primary ACME client for ordering and renewing all of my Let's Encrypt certificates so far. You are welcome to start using it as well. Please use the issue tracker to file bug reports.
 
+**First things first:**
+
+*  Only HTTP authorization requests are currently supported
+*  You need an existing ACME account and private key, this client currently cannot create accounts (feature is on the roadmap, tho)
+
 # Synopsis
 
     USAGE: ./acme-distributed.rb [options] <configuration>
