@@ -2,6 +2,9 @@ require 'acme/distributed/logger'
 require 'acme/distributed/config'
 require 'acme/distributed/challenge'
 
+require 'acme/distributed/connector'
+require 'acme/distributed/connector/http_file'
+
 require 'acme/distributed/configuration_error'
 
 class Acme::Distributed::Client
@@ -62,6 +65,15 @@ class Acme::Distributed::Client
 
     @logger.info("Considered #{certificates.length} (from a total of #{@config.certificates.length}) certificates for renewal/request.")
 
+    # Connect to all required servers for this challenge, when we considered at
+    # least 1 certificate for renewal and regardless of run mode.
+    #
+    if certificates.length > 0
+      @config.servers.each do |server_name, server|
+        server.connect!
+      end
+    end
+
     # This is our final list of certificates to process. We initiate a challenge
     # for every cert in the list.
     #
@@ -95,17 +107,7 @@ class Acme::Distributed::Client
         end
 
         @logger.debug("#{challenge.authorizations.length} authorizations need to be fullfilled for this certificate.")
-      end
 
-      # Connect to each server before we initiate the authorization requests.
-      # We do connect to the servers even if --dry-run mode was specified, so
-      # connection to the servers can be tested.
-      #
-      @config.servers.each do |server_name, server|
-        server.connect!
-      end
-
-      if not @options.dry_run?
         cleanup_servers = []
 
         # Create challenge responses for each authorization request on all
@@ -160,6 +162,12 @@ class Acme::Distributed::Client
           @logger.error("Could not complete all authorizations for certificate #{certificate.name}")
         end
       end 
+    end
+
+    @config.servers.each do |server_name, server|
+      if server.connected?
+        server.disconnect!
+      end
     end
   end
 

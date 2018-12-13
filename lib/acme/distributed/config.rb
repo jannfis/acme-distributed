@@ -4,7 +4,6 @@ require 'acme/distributed/logger'
 
 require 'acme/distributed/endpoint'
 require 'acme/distributed/certificate'
-require 'acme/distributed/challenge_server'
 
 class Acme::Distributed::Config
 
@@ -147,7 +146,7 @@ class Acme::Distributed::Config
     servers = {}
     yaml['challenge_servers'].keys.each do |server_name|
       @logger.debug("Processing configuration for challenge server '#{server_name}'")
-      server = Acme::Distributed::ChallengeServer.new(server_name, yaml['challenge_servers'][server_name], @options, @defaults)
+      server = Acme::Distributed::Connector::HTTPFile.new(server_name, yaml['challenge_servers'][server_name], @options, @defaults)
       servers[server.name] = server
       @logger.debug("Added challenge server name='#{server.name}', hostname='#{server.hostname}'")
     end

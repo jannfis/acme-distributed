@@ -5,8 +5,9 @@ require 'acme/distributed/logger'
 
 require 'acme/distributed/configuration_error'
 require 'acme/distributed/server_error'
+require 'acme/distributed/connector/ssh'
 
-class Acme::Distributed::ChallengeServer
+class Acme::Distributed::Connector::HTTPFile < Acme::Distributed::Connector::SSH
 
   # These keys must exist in the config hash
   REQUIRED_CONFIG_KEYS = [ "hostname", "username", "acme_path" ]
@@ -19,44 +20,9 @@ class Acme::Distributed::ChallengeServer
   # @param defaults [Hash]
   #
   def initialize(name, config, options, defaults)
-    @logger = Acme::Distributed::Logger.new
-    @name = name
-    @config = config
-    @options = options
-    @defaults = defaults || {}
-    @ssh = nil
+    super(name, config, options, defaults)
     @challenges = []
     validate!
-  end
-
-  def connect!(force_reconnect = false)
-    if @ssh
-      @logger.debug("SSH connection to server name='#{@name}', host=#{self.hostname} already established")
-      if not force_reconnect
-        return
-      else
-        @logger.debug("Forcing SSH reconnect for server name='#{@name}', host=#{self.hostname}")
-      end
-    end
-
-    @logger.info("Establishing SSH connection to server name='#{@name}', host='#{self.hostname}', user '#{self.username}'")
-    begin
-      @ssh = Net::SSH.start(self.hostname, self.username, timeout: 2, non_interactive: true)
-    rescue Net::SSH::AuthenticationFailed => msg
-      raise Acme::Distributed::ServerError, "Could not establish SSH connection to server name='#{@name}': #{msg}"
-    rescue StandardError => msg
-      raise Acme::Distributed::ServerError, "Could not establish SSH connection to server name='#{@name}': #{msg}"
-    end
-
-    # With each connection, also test whether we are able to write (create and
-    # delete a file) to the challenge path.
-    #
-    @logger.debug("Testing write access to #{self.acme_path}")
-    test_file = self.acme_path + "/" + SecureRandom.uuid
-    retval = @ssh.exec!("touch '#{test_file}' && rm -f '#{test_file}' && echo -n success").chomp
-    if retval != "success"
-      raise Acme::Distributed::ServerError, "No write access to #{self.acme_path} on challenge server #{self.name} (output=#{retval})"
-    end
   end
 
   def create_challenge(filename, contents)
@@ -100,9 +66,6 @@ class Acme::Distributed::ChallengeServer
       end
     end
     return errors
-  end
-
-  def disconnect!
   end
 
   def name
