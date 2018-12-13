@@ -40,7 +40,13 @@ class Acme::Distributed::ChallengeServer
     end
 
     @logger.info("Establishing SSH connection to server name='#{@name}', host='#{self.hostname}', user '#{self.username}'")
-    @ssh = Net::SSH.start(self.hostname, self.username, timeout: 2)
+    begin
+      @ssh = Net::SSH.start(self.hostname, self.username, timeout: 2, non_interactive: true)
+    rescue Net::SSH::AuthenticationFailed => msg
+      raise Acme::Distributed::ServerError, "Could not establish SSH connection to server name='#{@name}': #{msg}"
+    rescue StandardError => msg
+      raise Acme::Distributed::ServerError, "Could not establish SSH connection to server name='#{@name}': #{msg}"
+    end
 
     # With each connection, also test whether we are able to write (create and
     # delete a file) to the challenge path.
