@@ -1,5 +1,5 @@
 # Synopsis
-**acme-distributed** is a (very) simple command line ACME client for distributed certificate ordering. 
+**acme-distributed** is a (still incomplete) command line ACME client for distributed certificate ordering. 
 
 # Status
 **acme-distributed** is work in progress. I use it as my primary ACME client for ordering and renewing all of my Let's Encrypt certificates so far. You are welcome to start using it as well. Please use the issue tracker to file bug reports.
