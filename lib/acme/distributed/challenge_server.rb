@@ -29,8 +29,17 @@ class Acme::Distributed::ChallengeServer
     validate!
   end
 
-  def connect!
-    @logger.debug("Connecting to #{@name} (Host: #{self.hostname} with user #{self.username}")
+  def connect!(force_reconnect = false)
+    if @ssh
+      @logger.debug("SSH connection to server name='#{@name}', host=#{self.hostname} already established")
+      if not force_reconnect
+        return
+      else
+        @logger.debug("Forcing SSH reconnect for server name='#{@name}', host=#{self.hostname}")
+      end
+    end
+
+    @logger.info("Establishing SSH connection to server name='#{@name}', host='#{self.hostname}', user '#{self.username}'")
     @ssh = Net::SSH.start(self.hostname, self.username, timeout: 2)
 
     # With each connection, also test whether we are able to write (create and
