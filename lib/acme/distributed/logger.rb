@@ -43,6 +43,10 @@ class Acme::Distributed::Logger
     @@logger.level
   end
 
+  def logger
+    @@logger
+  end
+
   def level=(level)
     puts "Set log level: #{level}"
     @@logger.level = level
