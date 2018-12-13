@@ -82,82 +82,85 @@ class Acme::Distributed::Client
 
       if @options.dry_run?
         @logger.info("Option --dry-run was specified, won't perform ACME requests.")
-        next
+      else
+        challenge = Acme::Distributed::Challenge.new(@endpoint, certificate, @config)
+        challenge.start!
+
+        # Should not happen -- but if there are no authorization requests, we
+        # skip the current certificate.
+        #
+        if challenge.authorizations.length < 1
+          @logger.warn("No authorization requests received for certificate name=#{certificate.name}")
+          next
+        end
+
+        @logger.debug("#{challenge.authorizations.length} authorizations need to be fullfilled for this certificate.")
       end
-
-      challenge = Acme::Distributed::Challenge.new(@endpoint, certificate, @config)
-      challenge.start!
-
-      # Should not happen -- but if there are no authorization requests, we
-      # skip the current certificate.
-      #
-      if challenge.authorizations.length < 1
-        @logger.warn("No authorization requests received for certificate name=#{certificate.name}")
-        next
-      end
-
-      @logger.debug("#{challenge.authorizations.length} authorizations need to be fullfilled for this certificate.")
 
       # Connect to each server before we initiate the authorization requests.
+      # We do connect to the servers even if --dry-run mode was specified, so
+      # connection to the servers can be tested.
       #
       @config.servers.each do |server_name, server|
         server.connect!
       end
 
-      cleanup_servers = []
+      if not @options.dry_run?
+        cleanup_servers = []
 
-      # Create challenge responses for each authorization request on all
-      # servers.
-      #
-      challenge.authorizations.each do |authorization|
-        @config.servers.each do |server_name, server|
-          begin
-            server.create_challenge(authorization.http.filename, authorization.http.file_content)
-            cleanup_servers << server
-          rescue Acme::Distributed::ServerError => msg
-            @logger.error(msg)
+        # Create challenge responses for each authorization request on all
+        # servers.
+        #
+        challenge.authorizations.each do |authorization|
+          @config.servers.each do |server_name, server|
+            begin
+              server.create_challenge(authorization.http.filename, authorization.http.file_content)
+              cleanup_servers << server
+            rescue Acme::Distributed::ServerError => msg
+              @logger.error(msg)
+            end
           end
         end
-      end
 
-      # At this point, we can request the ACME endpoint to perform the actual
-      # authorization of our requests.
-      #
-      begin
-        challenge.validate!
-      rescue StandardError => msg
-        @logger.error("Could not authorize certificate #{certificate.name}: #{msg}")
-      end
+        # At this point, we can request the ACME endpoint to perform the actual
+        # authorization of our requests.
+        #
+        begin
+          challenge.validate!
+        rescue StandardError => msg
+          @logger.error("Could not authorize certificate #{certificate.name}: #{msg}")
+        end
 
-      # Remove all challenge files that we have created.
-      #
-      if cleanup_servers.length > 0
-        errors = 0
-        cleanup_servers.each do |server|
-          errors = server.remove_all_challenges
+        # Remove all challenge files that we have created.
+        #
+        if cleanup_servers.length > 0
+          errors = 0
+          cleanup_servers.each do |server|
+            errors = server.remove_all_challenges
+          end
+          if errors > 0
+            @logger.warn("While removing challenges, #{errors} errors where encountered. Please check manually.")
+          end
+        else
+          @logger.warn("No challenges were created.")
         end
-        if errors > 0
-          @logger.warn("While removing challenges, #{errors} errors where encountered. Please check manually.")
-        end
-      else
-        @logger.warn("No challenges were created.")
-      end
 
-      # All of our authorization were valid in this challenge. We can now go
-      # ahead and finalize the order by requesting the certificate from the
-      # endpoint.
-      #
-      if challenge.valid?
-        @logger.info("Successfully completed all authorizations, requesting final certificate for #{certificate.name}")
-        cert_data = challenge.finalize!
-        @logger.info("Writing PEM data to #{certificate.path}")
-        File.open(certificate.path, "w") do |f|
-          f.write(cert_data)
+        # All of our authorization were valid in this challenge. We can now go
+        # ahead and finalize the order by requesting the certificate from the
+        # endpoint.
+        #
+        if challenge.valid?
+          @logger.info("Successfully completed all authorizations, requesting final certificate for #{certificate.name}")
+          cert_data = challenge.finalize!
+          @logger.info("Writing PEM data to #{certificate.path}")
+          File.open(certificate.path, "w") do |f|
+            f.write(cert_data)
+          end
+        else
+          @logger.error("Could not complete all authorizations for certificate #{certificate.name}")
         end
-      else
-        @logger.error("Could not complete all authorizations for certificate #{certificate.name}")
-      end
-    end 
+      end 
+    end
   end
 
   private
