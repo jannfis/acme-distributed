@@ -6,6 +6,7 @@
 
 **First things first:**
 
+*  This documentation is quite **out of date** - sorry for that, I'm working on new documentation.
 *  Only HTTP authorization requests are currently supported
 *  You need an existing ACME account and private key, this client currently cannot create accounts (feature is on the roadmap, tho)
 
@@ -16,8 +17,6 @@
       -e, --endpoint <name>            The endpoint to use for the request
       -c <cert1[, cert2[, ...]]>,      Certificates to request
          --certificates
-      -s <server1,[, server2[, ...]]>, Servers to create challenge answers on
-         --servers
       -L, --log-level <level>          Log level to use [DEBUG, INFO, WARN, ERROR]. Default is INFO.
       -r, --remaining-lifetime <days>  Only renew certificates which have a remaining validity less than <days> days
       -n, --dry-run                    Dry-run mode, does not perform any actual change.
@@ -115,7 +114,7 @@ certificates:
     path: /etc/acme-deploy/{{endpoint}}/certs/secure.example.com.pem
 
 ```
-## Challenge server configuration
+## Connector configuration
 The list of servers which will handle the http-01 authorization challenges are defined here. You can define any number of servers you wish, and you should define all servers here that will have the certificates deployed (e.g. those that will terminate SSL requests for the FQDNs specified in the configured certificates.)
 
 * **hostname** specifies the DNS hostname (or IP address) of the server to connect to via SSH
