@@ -1,4 +1,4 @@
-# Synopsis
+# acme-distributed
 **acme-distributed** is a (still incomplete) command line ACME client for distributed certificate ordering. 
 
 # Status
