@@ -37,4 +37,11 @@ rescue Acme::Distributed::ConfigurationError => msg
   exit 1
 end
 
-client.run
+begin
+  client.run
+rescue StandardError => msg
+  @logger.fatal(msg.message)
+  exit 1
+end
+
+@logger.info("Success.")
