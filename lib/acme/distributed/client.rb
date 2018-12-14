@@ -116,7 +116,7 @@ class Acme::Distributed::Client
         # connectors.
         #
         challenge.authorizations.each do |authorization|
-          @config.connectors[certificate.connector_type].each do |connector_name, connector|
+          @config.connectors[certificate.connector_group].each do |connector_name, connector|
             begin
               connector.create_challenge(authorization.http.filename, authorization.http.file_content)
               cleanup_connectors << connector
