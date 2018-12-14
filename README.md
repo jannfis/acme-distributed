@@ -10,6 +10,8 @@
 *  Only HTTP authorization requests are currently supported
 *  You need an existing ACME account and private key, this client currently cannot create accounts (feature is on the roadmap, tho)
 
+The master branch in this repository most likely is unstable from time to time. Please clone one of the tags for testing.
+
 # Synopsis
 
     USAGE: ./acme-distributed.rb [options] <configuration>
