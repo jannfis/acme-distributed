@@ -68,13 +68,25 @@ class Acme::Distributed::Challenge
       @order = @acme_client.new_order(identifiers: @certificate.subjects)
     rescue StandardError => msg
       self.status = CHALLENGE_STATE_ERROR
+      @logger.debug("We have an error!")
       raise Acme::Distributed::ChallengeError, msg
     end
 
     # For each subject in the certificate, we should now have an authorization
-    # request that we must fill.
-    @order.authorizations.each do |authorization|
-      @authorizations << authorization
+    # request that we must fill. We will be quite 
+    timeouts = 0
+    success = false 
+    while timeouts < 10 and not success
+      @authorizations = []
+      begin
+        @order.authorizations.each do |authorization|
+          @authorizations << authorization
+        end
+        success = true
+      rescue Acme::Client::Error::Timeout
+        timeouts += 1
+        @logger.debug("We hit a timeout error, we retry (#{timeouts}/10)")
+      end
     end
 
     self.status = CHALLENGE_STATE_STARTED
@@ -120,6 +132,16 @@ class Acme::Distributed::Challenge
       sleep(1)
     end
     @logger.debug("Order status: #{@order.status}")
-    return @order.certificate
+    timeouts = 0
+    certificate = nil
+    while timeouts < 10 and not certificate
+      begin
+        certificate = @order.certificate
+      rescue Acme::Client::Error::Timeout
+        timeouts += 1
+        @logger.debug("We hit a timeout (#{timeouts}/10)")
+      end
+    end
+    return certificate
   end
 end
