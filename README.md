@@ -1,13 +1,16 @@
-# Synopsis
-**acme-distributed** is a (very) simple command line ACME client for distributed certificate ordering. 
+# acme-distributed
+**acme-distributed** is a (still incomplete) command line ACME client for distributed certificate ordering. 
 
 # Status
 **acme-distributed** is work in progress. I use it as my primary ACME client for ordering and renewing all of my Let's Encrypt certificates so far. You are welcome to start using it as well. Please use the issue tracker to file bug reports.
 
 **First things first:**
 
+*  This documentation is quite **out of date** - sorry for that, I'm working on new documentation.
 *  Only HTTP authorization requests are currently supported
 *  You need an existing ACME account and private key, this client currently cannot create accounts (feature is on the roadmap, tho)
+
+The master branch in this repository most likely is unstable from time to time. Please clone one of the tags for testing.
 
 # Synopsis
 
@@ -16,8 +19,6 @@
       -e, --endpoint <name>            The endpoint to use for the request
       -c <cert1[, cert2[, ...]]>,      Certificates to request
          --certificates
-      -s <server1,[, server2[, ...]]>, Servers to create challenge answers on
-         --servers
       -L, --log-level <level>          Log level to use [DEBUG, INFO, WARN, ERROR]. Default is INFO.
       -r, --remaining-lifetime <days>  Only renew certificates which have a remaining validity less than <days> days
       -n, --dry-run                    Dry-run mode, does not perform any actual change.
@@ -115,7 +116,7 @@ certificates:
     path: /etc/acme-deploy/{{endpoint}}/certs/secure.example.com.pem
 
 ```
-## Challenge server configuration
+## Connector configuration
 The list of servers which will handle the http-01 authorization challenges are defined here. You can define any number of servers you wish, and you should define all servers here that will have the certificates deployed (e.g. those that will terminate SSL requests for the FQDNs specified in the configured certificates.)
 
 * **hostname** specifies the DNS hostname (or IP address) of the server to connect to via SSH
