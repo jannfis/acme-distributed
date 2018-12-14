@@ -41,6 +41,9 @@ begin
   client.run
 rescue StandardError => msg
   @logger.fatal(msg.message)
+  if @logger.level == Logger::DEBUG
+    raise
+  end
   exit 1
 end
 
