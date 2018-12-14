@@ -69,7 +69,8 @@ class Acme::Distributed::Client
     #
     if certificates.length > 0
       certificates.each do |certificate|
-        @config.connectors[certificate.connector_type].each do |connector_name, connector|
+        @logger.debug("Going to connect all connectors of type '#{certificate.connector_group}'")
+        @config.connectors[certificate.connector_group].each do |connector_name, connector|
           connector.connect!
         end
       end
@@ -166,7 +167,7 @@ class Acme::Distributed::Client
     end
 
     certificates.each do |certificate|
-      @config.connectors[certificate.connector_type].each do |connector_name, connector|
+      @config.connectors[certificate.connector_group].each do |connector_name, connector|
         if connector.connected?
           connector.disconnect!
         end

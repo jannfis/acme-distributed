@@ -37,30 +37,41 @@ certificates:
     path: /etc/acme-deploy/{{endpoint}}/certs/secure.example.com.pem
     renew_days: 30
 
-# Define our web servers the challenge responses will be created at. For each
-# server, at least hostname and acme_path has to be specified. acme_path is
-# the path on the remote system where the file containing the challenge 
-# response will be put. Make sure that the specified user on the destination
-# system has write permission to the directory specified by acme_path. Do
-# yourself a favor and do not use the root user for connecting to the remote
-# system.
+# Define connector groups.
 #
-connectors:
-  frontend_web_1:
-    hostname: www1.example.com
-    username: acme
-    ssh_port: 22
-    acme_path: /var/www/acme
+# Each connector group has a mandatory type, that all connectors in this group
+# will share. A connector group consists of at least 1 connector, whose config
+# properties are dependent upon on the connector type.
+#
+# You can then assign certificates to a connector group to define how this
+# certificate is authorized by Let's Encrypt.
+#
+connector_groups:
+  frontend_web:
     type: ssh_http_file
-  frontend_web_2:
-    hostname: www2.example.com
-    username: acme
-    ssh_port: 22
-    acme_path: /var/www/acme
-    type: ssh_http_file
+    
+    # connectors of type ssh_http_file require at least the following config:
+    #
+    # name: Symbolic name of this connector. Must be unique.
+    # hostname: Name of the host to connect to
+    # username: Remote user name to use for SSH connection
+    # ssh_port: Port to connect to
+    # acme_path: Path on the remote system where to put authorization files
+    #
+    connectors:
+    - name: frontend_web_1
+      hostname: www1.example.com
+      username: acme
+      ssh_port: 22
+      acme_path: /var/www/acme
+    - name: frontend_web_2
+      hostname: www2.example.com
+      username: acme
+      ssh_port: 22
+      acme_path: /var/www/acme
 
 # Set some sane defaults for your environment here.
 defaults:
   endpoint: staging
   renew_days: 30
-  type: ssh_http_file
+  connector_group: ssh_http_file

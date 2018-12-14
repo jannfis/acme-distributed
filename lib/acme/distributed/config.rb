@@ -11,14 +11,14 @@ class Acme::Distributed::Config
 
   # List of required keys in configuration YAML
   #
-  REQUIRED_CONFIG_KEYS = [ "endpoints", "certificates", "connectors" ]
+  REQUIRED_CONFIG_KEYS = [ "endpoints", "certificates", "connector_groups" ]
 
   # List of valid keys for defaults section 
   #
   VALID_DEFAULT_KEYS = {
     "endpoint" => String,
     "renew_days" => Integer,
-    "connector_type" => String
+    "connector_group" => String
   }
 
   # List of valid challenge types and their implementation classes.
@@ -52,7 +52,14 @@ class Acme::Distributed::Config
     @config[:endpoints] = configure_endpoints(yaml)
     @config[:certificates] = configure_certificates(yaml)
     @config[:connectors] = configure_connectors(yaml)
-    
+
+    # Check for valid connector group in the certificates.
+    #
+    @config[:certificates].each do |cert_name, cert|
+      if cert.connector_group and not @config[:connectors][cert.connector_group]
+        raise Acme::Distributed::ConfigurationError, "Certificate #{cert.name} has association to connector group #{cert.connector_group}, but that doesn't exist."
+      end
+    end
   end
 
   # Get hash of all configured endpoints.
@@ -158,27 +165,44 @@ class Acme::Distributed::Config
     certificates
   end
 
-  # Configure all connectors from the YAML definition. The configuration will
-  # be stored in a two-level hash, with the top level being the challenge type
-  # the connector implements and the second level the name of the connector.
+  # Configure all connector groups from the YAML definition.
   #
   def configure_connectors(yaml)
     connectors = {}
 
-    VALID_CHALLENGE_TYPES.keys.each do |name|
-      connectors[name] = {}
-    end
-
-    yaml['connectors'].each do |connector_name, config|
-      @logger.debug("Processing configuration for connector '#{connector_name}'")
+    yaml['connector_groups'].each do |group_name, config|
+      @logger.debug("Processing configuration for connector group '#{group_name}'")
+      connectors[group_name] = {}
       if not config['type']
-        raise Acme::Distributed::ConfigurationError, "Connector #{connector_name} has no type attribute"
+        raise Acme::Distributed::ConfigurationError, "Connector group '#{group_name}' has no type attribute"
       end
-      connector_class = self.connector_class(config['type'])
-      @logger.debug("Instantiating new connector from class #{connector_class.to_s}")
-      connector = connector_class.new(connector_name, config, @options, @defaults)
-      connectors[config['type']][connector.name] = connector
-      @logger.debug("Added connector name='#{connector.name}', hostname='#{connector.hostname}'")
+      group_type = config['type']
+
+      if not VALID_CHALLENGE_TYPES.keys.include?(group_type)
+        raise Acme::Distributed::ConfigurationError, "Connector type '#{group_type}' for connector group '#{group_name}' is unknown."
+      end
+
+      if not config['connectors']
+        raise Acme::Distributed::ConfigurationError, "Connector group '#{group_name}' has no connectors defined"
+      end
+
+      if not config['connectors'].is_a?(Array)
+        raise Acme::Distributed::ConfigurationError, "'connectors' property of connector group '#{group_name}' must be array"
+      end
+
+      config['connectors'].each do |connector|
+        if not connector.is_a?(Hash)
+          raise Acme::Distributed::ConfigurationError, "Invalid connector configuration in connector group '#{group_name}'"
+        end
+        if not connector["name"] or not connector["name"].is_a?(String)
+          raise Acme::Distributed::ConfigurationError, "Invalid connector configuration in connector group '#{group_name}' (no 'name' property)"
+        end
+        connector_class = self.connector_class(group_type)
+        @logger.debug("Instantiating new connector from class #{connector_class.to_s}")
+        _connector = connector_class.new(connector["name"], connector, @options, @defaults)
+        connectors[group_name][connector["name"]] = _connector
+        @logger.debug("Added connector name='#{_connector.name}', hostname='#{_connector.hostname}' to group #{group_type}")
+      end
     end
     return connectors
   end
@@ -201,7 +225,7 @@ class Acme::Distributed::Config
       if yaml['defaults'].is_a?(Hash)
         yaml['defaults'].keys.each do |item|
           if not VALID_DEFAULT_KEYS.keys.include?(item.to_s)
-            raise Acme::Distributed::ConfigurationError, "(file=#{file}) invalid item in defaults section: #{item.to_s}"
+            raise Acme::Distributed::ConfigurationError, "(file=#{@filename}) invalid item in defaults section: #{item.to_s}"
           end
           if not yaml['defaults'][item].is_a?(VALID_DEFAULT_KEYS[item])
             raise Acme::Distributed::ConfigurationError, "(file=#{file}) #{item.to_s} in defaults section must be #{VALID_DEFAULT_KEYS[item].to_s}"

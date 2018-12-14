@@ -116,6 +116,14 @@ class Acme::Distributed::Certificate
     @config["connector_type"] = value
   end
 
+  def connector_group
+    @config["connector_group"]
+  end
+
+  def connector_group=(value)
+    @config["connector_group"] = value
+  end
+
   # Returns true if the certificate's PEM exists on the local system, otherwise
   # returns false.
   #
@@ -218,11 +226,11 @@ class Acme::Distributed::Certificate
       @config["renew_days"] = @defaults["renew_days"] || 0
     end
 
-    if not @config["connector_type"]
-      if not @defaults["connector_type"]
-        raise Acme::Distributed::ConfigurationError, "Certificate #{@name} has no connector_type, and no default is set."
+    if not @config["connector_group"]
+      if not @defaults["connector_group"]
+        raise Acme::Distributed::ConfigurationError, "Certificate #{@name} has no connector_group, and no default is set."
       end
-      @config["connector_type"] = @defaults["connector_type"]
+      @config["connector_group"] = @defaults["connector_group"]
     end
   end
 end
