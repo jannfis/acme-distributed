@@ -109,37 +109,70 @@ certificates:
       - ssl3.example.com
     key: /etc/acme-deploy/{{endpoint}}/keys/ssl.example.com.key
     path: /etc/acme-deploy/{{endpoint}}/certs/ssl.example.com.pem
+    connector_group: frontend_web_servers
 
   secure.example.com:
     subject: secure.example.com
     key: /etc/acme-deploy/{{endpoint}}/keys/secure.example.com.key
     path: /etc/acme-deploy/{{endpoint}}/certs/secure.example.com.pem
+    connector_group: backend_web_servers
 
 ```
 ## Connector configuration
-The list of servers which will handle the http-01 authorization challenges are defined here. You can define any number of servers you wish, and you should define all servers here that will have the certificates deployed (e.g. those that will terminate SSL requests for the FQDNs specified in the configured certificates.)
 
-* **hostname** specifies the DNS hostname (or IP address) of the server to connect to via SSH
-* **username** specifies the remote username to use for authentication
-* **ssh_port** specifies the TCP port the SSH daemon on the server listens to
-* **acme_path** specifies the path on the remote server where authorization challenges are put
+**Connectors** are used to connect to the remote systems that handle the authorization requests (e.g. your web servers). Connectors are grouped into **connector groups** which share a similar **connector type**. Each connector group must have at least one connector defined, but can (theoretically) contain infinite connectors. As a rule of thumb, if your web servers are behind a load balancer, each server should be configured as a connector in the same group.
 
-All settings above are mandatory. 
+Connectors are required to be unique within each group, but not across groups. You can use a connector with the same properties as an existing one in different groups.
 
-Please note that only the base name of the path sent by the ACME challenge will be used when creating the challenge files on the remote servers -- the ```/.well-known/acme``` part will be cut off. So you either have an alias configured on your web servers pointing to **acme_path** or you include ```/.well-known/acme``` in **acme_path** setting. In the example below, the web server is configured with an alias ```/.well-known/acme -> /var/www/acme``` for simplicity.
+Certificates can be configured to be handled by a specific connector group or by a configurable default connector group.
+
+Connector groups know two properties:
+
+* ```type```: The type of the connector. See *Connector types* for more details.
+* ```connectors```: An array that contains connector configuration as a hash, one element for each connector.
+
+## Connector types
+
+Currently, the following connector types are supported.
+
+### ssh_http_file
+
+Uses SSH to put an authorization challenge on the file system on a remote server, to be authorized via HTTP.
+
+The following configuration options are mandatory and must be set:
+
+* ```hostname``` specifies the DNS hostname (or IP address) of the server to connect to via SSH
+* ```username``` specifies the remote username to use for authentication
+* ```ssh_port``` specifies the TCP port the SSH daemon on the server listens to
+* ```acme_path``` specifies the path on the remote server where authorization challenges are put
+
+Please note that only the base name of the path sent by the ACME challenge will be used when creating the challenge files on the remote servers -- the ```/.well-known/acme``` part will be cut off. So you either have an alias configured on your web servers pointing to **acme_path** or you include ```/.well-known/acme-challenge``` in **acme_path** setting. In the example below, the web server is configured with an alias ```/.well-known/acme-challenge -> /var/www/acme``` for simplicity.
+
+## Connectors example
 
 ```yaml
-challenge_servers:
-  frontend_web_1:
-    hostname: www1.example.com
-    username: acme
-    ssh_port: 22
-    acme_path: /var/www/acme
-  frontend_web_2:
-    hostname: www2.example.com
-    username: acme
-    ssh_port: 22
-    acme_path: /var/www/acme
+connector_groups:
+  frontend_web_servers:
+    type: ssh_http_file
+    connectors:
+    - name: frontend_web_1
+      hostname: www1.example.com
+      username: acme
+      ssh_port: 22
+      acme_path: /var/www/acme
+    - name: frontend_web_2:
+      hostname: www2.example.com
+      username: acme
+      ssh_port: 22
+      acme_path: /var/www/acme
+  backend_web_servers:
+    type: ssh_http_file
+    connectors:
+    - name: backend_web_1
+      hostname: www3.example.com
+      username: acme
+      ssh_port: 22
+      acme_path: /var/www/htdocs/.well-known/acme-challenge
 
 ```
 # License & pull requests
