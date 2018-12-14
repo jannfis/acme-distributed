@@ -184,11 +184,11 @@ class Acme::Distributed::Client
     @config.certificates.each do |cert_name, certificate|
       if certificate.path =~ /\{\{\ *[a-z]+\ *\}\}/
         @logger.debug("Performing variable replacement in PEM path for cert='#{cert_name}'")
-        certificate.path.sub!("{{endpoint}}", @endpoint.name)
+        certificate.path.sub!(/\{\{\ *endpoint\ *\}\}/, @endpoint.name)
       end
       if certificate.key =~ /\{\{\ *[a-z]+\ *\}\}/
         @logger.debug("Performing variable replacement in key path for cert='#{cert_name}'")
-        certificate.key.sub!("{{endpoint}}", @endpoint.name)
+        certificate.key.sub!(/\{\{\ *endpoint\ *\}\}/, @endpoint.name)
       end
     end
   end
