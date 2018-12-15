@@ -88,6 +88,9 @@ class Acme::Distributed::Challenge
         @logger.debug("We hit a timeout error, we retry (#{timeouts}/10)")
       end
     end
+    if not success
+      raise Acme::Distributed::ChallengeError, "Could not get authorizations due to Acme::Client::Error::Timeout"
+    end
 
     self.status = CHALLENGE_STATE_STARTED
   end
@@ -141,6 +144,9 @@ class Acme::Distributed::Challenge
         timeouts += 1
         @logger.debug("We hit a timeout (#{timeouts}/10)")
       end
+    end
+    if not certificate
+      raise Acme::Distributed::ChallengeError, "Could not finalize the order due to Acme::Client::Error::Timeout"
     end
     return certificate
   end
