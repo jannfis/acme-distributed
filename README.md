@@ -7,7 +7,7 @@
 **First things first:**
 
 *  This documentation is quite **out of date** - sorry for that, I'm working on new documentation.
-*  Only HTTP authorization requests are currently supported
+*  ~~Only HTTP authorization requests are currently supported~~ Both, HTTP and DNS challenges are supported. DNS challenges are only supported with the *unbound* DNS server currently, tho.
 *  You need an existing ACME account and private key, this client currently cannot create accounts (feature is on the roadmap, tho)
 
 The master branch in this repository most likely is unstable from time to time. Please download the latest release.
