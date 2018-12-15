@@ -148,6 +148,17 @@ The following configuration options are mandatory and must be set:
 
 Please note that only the base name of the path sent by the ACME challenge will be used when creating the challenge files on the remote servers -- the ```/.well-known/acme``` part will be cut off. So you either have an alias configured on your web servers pointing to **acme_path** or you include ```/.well-known/acme-challenge``` in **acme_path** setting. In the example below, the web server is configured with an alias ```/.well-known/acme-challenge -> /var/www/acme``` for simplicity.
 
+### ssh_dns_unbound
+
+Uses SSH to connect to a DNS server running ```unbound``` (or a server with control access to your DNS server) and executes ```unbound-control``` to add an authorization record to your DNS zone (i.e. ```unbound-control local_data _acme_challenge.fqdn.example.com 5 IN TXT <challenge>```).
+
+The following configuration options are mandatory and must be set:
+
+* ```hostname``` specifies the DNS hostname (or IP address) of the server to connect to via SSH
+* ```username``` specifies the remote username to use for authentication
+* ```ssh_port``` specifies the TCP port the SSH daemon on the server listens to
+* ```unbound_ctrl``` specifies the path on the remote server to the ```unbound-control``` binary
+
 ## Connectors example
 
 ```yaml
