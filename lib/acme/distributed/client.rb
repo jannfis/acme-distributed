@@ -97,7 +97,7 @@ class Acme::Distributed::Client
       if @options.dry_run?
         @logger.info("Option --dry-run was specified, won't perform ACME requests.")
       else
-        challenge = Acme::Distributed::Challenge.new(@endpoint, certificate, @config)
+        challenge = Acme::Distributed::Challenge.new(@endpoint, certificate, @config, @ooptions)
         challenge.start!
 
         # Should not happen -- but if there are no authorization requests, we
@@ -117,8 +117,21 @@ class Acme::Distributed::Client
         #
         challenge.authorizations.each do |authorization|
           @config.connectors[certificate.connector_group].each do |connector_name, connector|
+            authorization_type = connector.authorization_type
+            case connector.authorization_type
+            when "http-01"
+              challenge_name = authorization.http.filename
+              challenge_content = authorization.http.file_content
+            when "dns-01"
+              challenge_name = authorization.dns.record_name
+              challenge_content = authorization.dns.record_content
+            else
+              @logger.error("Unknown authorization type: #{connector.authorization.type}")
+              next
+            end
+
             begin
-              connector.create_challenge(authorization.http.filename, authorization.http.file_content)
+              connector.create_challenge(authorization.domain, challenge_name, challenge_content)
               cleanup_connectors << connector
             rescue Acme::Distributed::ServerError => msg
               @logger.error(msg)

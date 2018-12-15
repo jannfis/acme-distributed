@@ -24,8 +24,15 @@ class Acme::Distributed::Config
   # List of valid challenge types and their implementation classes.
   #
   VALID_CHALLENGE_TYPES = {
-    "ssh_http_file" => Acme::Distributed::Connector::SshHttpFile
+    "ssh_http_file" => Acme::Distributed::Connector::SshHttpFile,
+    "ssh_dns_unbound" => Acme::Distributed::Connector::SshDnsUnbound
   }
+
+  # List of valid authorization types we support
+  VALID_AUTHORIZATION_TYPES = [
+    "dns-01",
+    "http-01",
+  ]
 
   # Load configuration from file
   #
@@ -200,6 +207,10 @@ class Acme::Distributed::Config
         connector_class = self.connector_class(group_type)
         @logger.debug("Instantiating new connector from class #{connector_class.to_s}")
         _connector = connector_class.new(connector["name"], connector, @options, @defaults)
+        authorization_type = _connector.authorization_type
+        if not VALID_AUTHORIZATION_TYPES.include?(authorization_type)
+          raise Acme::Distributed::ConfigurationError, "Connector #{connector_class.to_s} specifies #{authorization_type} as authorization type, but this is not a supported type"
+        end
         connectors[group_name][connector["name"]] = _connector
         @logger.debug("Added connector name='#{_connector.name}', hostname='#{_connector.hostname}' to group #{group_type}")
       end
@@ -240,7 +251,6 @@ class Acme::Distributed::Config
   end
 
   def validate_defaults!(config)
-
   end
 
 end

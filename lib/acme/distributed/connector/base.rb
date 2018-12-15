@@ -29,7 +29,7 @@ class Acme::Distributed::Connector::Base
     raise Acme::Distributed::ConnectorError, "#disconnect! is not implemented in derived class"
   end
 
-  def create_challenge(challenge_name, challenge_content)
+  def create_challenge(subject, challenge_name, challenge_content)
     raise Acme::Distributed::ConnectorError, "#create_challenge is not implemented in derived class"
   end
 
@@ -39,5 +39,9 @@ class Acme::Distributed::Connector::Base
 
   def connected?
     raise Acme::Distributed::ConnectorError, "#connected? is not implemented in derived class"
+  end
+
+  def authorization_type
+    raise Acme::Distributed::ConnectorError, "#authorization_type is not implemented in derived class"
   end
 end

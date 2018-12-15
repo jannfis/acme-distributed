@@ -7,10 +7,16 @@ require 'acme/distributed/configuration_error'
 require 'acme/distributed/server_error'
 require 'acme/distributed/connector/ssh'
 
-class Acme::Distributed::Connector::SshHttpFile < Acme::Distributed::Connector::SSH
+# This connector provides fullfillment of DNS authorizations with the unbound
+# DNS server.
+#
+# It connects to the DNS server via SSH and runs unbound-control on the server
+# to create the authorization RR.
+#
+class Acme::Distributed::Connector::SshDnsUnbound < Acme::Distributed::Connector::SSH
 
   # These keys must exist in the config hash
-  REQUIRED_CONFIG_KEYS = [ "hostname", "username", "acme_path" ]
+  REQUIRED_CONFIG_KEYS = [ "hostname", "username", "unbound_ctrl" ]
 
   # Creates a new ChallengeServer instance
   #
@@ -25,51 +31,64 @@ class Acme::Distributed::Connector::SshHttpFile < Acme::Distributed::Connector::
     validate!
   end
 
+  # Connect to the remote DNS server and check whether we can execute unbound's
+  # control program successfully.
+  #
   def connect!(force_reconnect = false)
     super(force_reconnect)
-    
-    # Test whether we can write to the target directory
-    tempfile = self.acme_path + "/" + SecureRandom.uuid
-    @logger.debug("Testing writability of #{tempfile}")
-    success = @ssh.exec!("touch #{tempfile} && rm #{tempfile} && echo -n success").chomp
+   
+    success = @ssh.exec!("test -x #{@config['unbound_ctrl']} && #{@config['unbound_ctrl']} list_local_zones >/dev/null && echo -n success")
     if success != "success"
-      raise Acme::Distributed::ServerError, "Cannot connect to server #{self.name}"
+      raise Acme::Distributed::ServerError, "Cannot execute #{@config['unbound_ctrl']} on host='#{self.name}'"
     end
   end
 
-  def create_challenge(subject, challenge_name, contents)
+  # Create the TXT RR for authorization.
+  #
+  def create_challenge(subject, challenge_name, challenge_content)
     check_connection!
 
-    if challenge_name !~ /^\.well-known\/acme\-challenge\/[a-zA-Z0-9\_\-]+$/
-      raise Acme::Distributed::ServerError, "Received malformed filename for authorization fullfilment (filename='#{challenge_name}')"
+    if challenge_name !~ /^[a-zA-Z0-9\_\-]+$/
+      raise Acme::Distributed::ServerError, "Received malformed filename for authorization fullfilment (RR='#{challenge_name}')"
     end
 
-    if contents !~ /^[a-zA-Z0-9\_\-\=\.]+$/
+    if challenge_content !~ /^[a-zA-Z0-9\_\-\=\.]+$/
       raise Acme::Distributed::ServerError, "Received malformed contents for authorization (content=#{contents})"
     end
-    
-    # Remember path to this challenge for later.
-    #
-    challenge_path = self.acme_path + "/" + File.basename(challenge_name)
 
-    @logger.debug("Creating challenge content for '#{subject}' at '#{challenge_path}' on server='#{self.name}'")
-    retval = @ssh.exec!("echo '#{contents}' > '#{challenge_path}' && echo -n success").chomp
+    record_name = "#{challenge_name}.#{subject}"
+    
+    @logger.debug("Creating challenge content for '#{subject}' at '#{record_name}' on server='#{self.name}'")
+
+    # Create the RR using unbound-control
+    #
+    command = "#{@config['unbound_ctrl']} local_data #{record_name}. 5 IN TXT #{challenge_content} >/dev/null && echo -n success"
+    @logger.debug("Executing: '#{command}'")
+    retval = @ssh.exec!("#{@config['unbound_ctrl']} local_data #{record_name}. 5 IN TXT #{challenge_content} >/dev/null && echo -n success").chomp
     if retval != "success"
-      raise Acme::Distributed::ServerError, "Error creating challenge for subject '#{subject}' on server name=#{self.name}: #{retval}"
+      raise Acme::Distributed::ServerError, "Error creating challenge for '#{subject}' on server name='#{self.name}': #{retval}"
     end
-    @challenges << challenge_path
+
+    # Remember the RR for later removal
+    @challenges << record_name
   end
 
+  # Remove the RR for the authorization request.
+  #
+  # Attention: This will remove ALL RRs for the given FQDN.
+  #
   def remove_challenge(challenge)
     check_connection!
-    @logger.debug("Removing challenge file at #{challenge} on server=#{self.name}")
-    retval = @ssh.exec!("test -f '#{challenge}' && rm -f '#{challenge}' && echo -n success").chomp
+    @logger.debug("Removing challenge #{challenge} on server=#{self.name}")
+    retval = @ssh.exec!("#{@config['unbound_ctrl']} local_data_remove #{challenge} >/dev/null && echo -n success").chomp
     if retval != "success"
       return false
     end
     return true
   end
 
+  # Remove all challenges that haven been handled by this connector.
+  #
   def remove_all_challenges
     errors = 0
     @challenges.each do |challenge|
@@ -109,7 +128,7 @@ class Acme::Distributed::Connector::SshHttpFile < Acme::Distributed::Connector::
   end
 
   def authorization_type
-    return "http-01"
+    return "dns-01"
   end
 
   private
