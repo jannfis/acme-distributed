@@ -87,14 +87,6 @@ class Acme::Distributed::CommandLine < Acme::Distributed::Options
         end
       end
 
-      # -s|--servers <serverlist>
-      # list of servers to use for challenge validation, comma separated
-      opts.on("-s", "--servers <server1[,<server2>[,...]]>", String, "List of servers to use for challenge verification") do |servers|
-        servers.split(",").each do |server|
-          @options[:servers] << server.strip
-        end
-      end
-
       # -r|--renew-days <days>
       # Number of days for the remaining lifetime of a cert to be processed
       opts.on("-r", "--renew-days <days>", Integer, "Only renew certificates which have a remaining validity less than <days> days") do |days|
