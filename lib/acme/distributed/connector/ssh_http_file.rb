@@ -25,6 +25,18 @@ class Acme::Distributed::Connector::SshHttpFile < Acme::Distributed::Connector::
     validate!
   end
 
+  def connect!(force_reconnect = false)
+    super(force_reconnect)
+    
+    # Test whether we can write to the target directory
+    tempfile = self.acme_path + "/" + SecureRandom.uuid
+    @logger.debug("Testing writability of #{tempfile}")
+    success = @ssh.exec!("touch #{tempfile} && rm #{tempfile} && echo -n success").chomp
+    if success != "success"
+      raise Acme::Distributed::ServerError, "Cannot connect to server #{self.name}"
+    end
+  end
+
   def create_challenge(filename, contents)
     check_connection!
 
