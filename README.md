@@ -25,6 +25,8 @@ The master branch in this repository most likely is unstable from time to time. 
       -r, --remaining-lifetime <days>  Only renew certificates which have a remaining validity less than <days> days
       -n, --dry-run                    Dry-run mode, does not perform any actual change.
 
+If you run **acme-distributed** behind a HTTP proxy server, be sure to set ```https_proxy``` environment accordingly.
+
 # Description
 **acme-distributed** is a simple ACME client for special use cases. It does not implement all functionality that other ACME clients offer. If you are just looking for an ordinary ACME client, please look elsewhere.
 
