@@ -177,13 +177,13 @@ connector_groups:
       ssh_port: 22
       acme_path: /var/www/acme
   backend_web_servers:
-    type: ssh_http_file
+    type: ssh_dns_unbound
     connectors:
     - name: backend_web_1
       hostname: www3.example.com
       username: acme
       ssh_port: 22
-      acme_path: /var/www/htdocs/.well-known/acme-challenge
+      unbound_ctrl: /usr/sbin/unbound-control
 
 ```
 # License & pull requests
