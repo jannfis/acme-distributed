@@ -76,4 +76,4 @@ connector_groups:
 defaults:
   endpoint: staging
   renew_days: 30
-  connector_group: ssh_http_file
+  connector_group: frontend_web
