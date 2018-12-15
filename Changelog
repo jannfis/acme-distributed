@@ -1,4 +1,7 @@
 master
+
+v0.3.0 - 2018-12-15
+- add configurable number of retries for timeout events per endpoint
 - introduce connector groups and group mapping
 - first steps towards modular connectors framework
 - improve SSH connection & error handling
