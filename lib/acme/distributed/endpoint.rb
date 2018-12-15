@@ -49,6 +49,10 @@ class Acme::Distributed::Endpoint
     @options['email_address'] = value
   end
 
+  def timeout_retries
+    @options['timeout_retries']
+  end
+
   # Check whether the endpoint's private key exist and is readable
   def key_exist?
     File.exist?(self.private_key) && File.readable?(self.private_key)
@@ -66,6 +70,15 @@ class Acme::Distributed::Endpoint
         raise Acme::Distributed::ConfigurationError, "Incomplete configuration for endpoint '#{@name}': Property '#{key}' is missing"
       end
     end
+
+    if @options["timeout_retries"]
+      if not @options["timeout_retries"].is_a?(Integer) || @options["timeout_retries"] < 0
+        raise Acme::Distributed::ConfigurationError, "Property 'timeout_retries' for endpoint '#{@name}' must be positive Integer"
+      end
+    else
+      @options["timeout_retries"] = 10
+    end
+
   end
 
 end

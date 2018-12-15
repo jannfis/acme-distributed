@@ -76,7 +76,7 @@ class Acme::Distributed::Challenge
     # request that we must fill. We will be quite 
     timeouts = 0
     success = false 
-    while timeouts < 10 and not success
+    while timeouts < @endpoint.timeout_retries + 1 and not success
       @authorizations = []
       begin
         @order.authorizations.each do |authorization|
@@ -85,7 +85,7 @@ class Acme::Distributed::Challenge
         success = true
       rescue Acme::Client::Error::Timeout
         timeouts += 1
-        @logger.debug("We hit a timeout error, we retry (#{timeouts}/10)")
+        @logger.debug("We hit a timeout error, we retry (#{timeouts}/#{@endpoint.timeout_retries})")
       end
     end
     if not success
@@ -108,8 +108,8 @@ class Acme::Distributed::Challenge
           authorization.http.reload
         rescue Acme::Client::Error::Timeout
           num_timeouts += 1
-          @łogger.debug("Received ACME timeout no##{num_timeouts} of max. 5")
-          if num_timeouts > 5
+          @łogger.debug("Received ACME timeout no##{num_timeouts} of max. #{@endpoints.timeout_retries}")
+          if num_timeouts >= @endpoint.timeout_retries + 1
             raise Acme::Distributed::ServerError, "Abort authorization request, max. number of timeouts exceeded"
           end
         end
@@ -137,7 +137,7 @@ class Acme::Distributed::Challenge
     @logger.debug("Order status: #{@order.status}")
     timeouts = 0
     certificate = nil
-    while timeouts < 10 and not certificate
+    while timeouts < @endpoint.timeout_retries + 1 and not certificate
       begin
         certificate = @order.certificate
       rescue Acme::Client::Error::Timeout

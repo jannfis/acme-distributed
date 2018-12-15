@@ -10,10 +10,12 @@ endpoints:
     url: https://acme-v02.api.letsencrypt.org/directory
     private_key: /etc/acme-deploy/accounts/production/private-key.pem
     email_addr: certs@example.com
+    timeout_retries: 10
   staging:
     url: https://acme-staging-v02.api.letsencrypt.org/directory
     private_key: /etc/acme-deploy/accounts/staging/private-key.pem
     email_addr: certs@example.com
+    timeout_retries: 10
 
 # Define all the certificates you want here. Each certificate needs at least
 # a subject (CN), a private key and a path where to store it.
