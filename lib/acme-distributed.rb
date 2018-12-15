@@ -1,7 +1,7 @@
 # Forward declaration of Acme::Distributed
 module Acme
   module Distributed
-    VERSION = "0.2.0".freeze
+    VERSION = "0.3.0".freeze
 
     # Return extended version info
     def self.versioninfo
