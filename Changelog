@@ -1,4 +1,5 @@
 master
+- initial support for handling DNS challenges
 
 v0.3.0 - 2018-12-15
 - add configurable number of retries for timeout events per endpoint
