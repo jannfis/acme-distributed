@@ -1,5 +1,6 @@
 require 'logger'
 
+require 'acme/distributed/version'
 require 'acme/distributed/logger'
 require 'acme/distributed/command_line_error'
 require 'acme/distributed/configuration_error'
