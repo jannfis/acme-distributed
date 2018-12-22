@@ -63,7 +63,8 @@ class Acme::Distributed::CommandLine < Acme::Distributed::Options
   #
   def parse_options
     @@optionparser = OptionParser.new do |opts|
-      opts.banner = "USAGE: #{@program} [options] <configuration.yaml>"
+      opts.banner =  "USAGE: #{@program} [options] <configuration.yaml>\n"
+      opts.banner += "       #{@program} -C <configuration.yaml>\n"
       
       # XXX: -V does exit. Unsure whether this is correct here.
       opts.on("-V", "--version", "Display version number and exit") do
@@ -92,6 +93,10 @@ class Acme::Distributed::CommandLine < Acme::Distributed::Options
       opts.on("-r", "--renew-days <days>", Integer, "Only renew certificates which have a remaining validity less than <days> days") do |days|
         raise Acme::Distributed::CommandLineError, "renew days must be positive integer" if days < 0
         @options[:renew_days] = days
+      end
+
+      opts.on("-C", "--check-config") do
+        @options[:check_config] = true
       end
 
       opts.on("-L", "--log-level <level>", String, "Log level to use [DEBUG, INFO, WARN, ERROR]. Default is INFO.") do |level|

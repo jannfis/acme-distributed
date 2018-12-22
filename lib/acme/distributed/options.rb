@@ -76,7 +76,8 @@ class Acme::Distributed::Options
       :servers => [],
       :log_level => Logger::INFO,
       :renew_days => nil,
-      :dry_run => false
+      :dry_run => false,
+      :check_config => false,
     }
     options
   end
