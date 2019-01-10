@@ -7,6 +7,8 @@ require 'acme/distributed/certificate'
 
 require 'acme/distributed/challenge_error'
 
+# XXX: This needs a little overhaul.
+#
 class Acme::Distributed::Challenge
 
   CHALLENGE_STATE_ERROR = -1
