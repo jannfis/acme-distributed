@@ -52,10 +52,10 @@ class Acme::Distributed::Client
         if not certificate.key_exist?
           @logger.error("Private key for certificate='#{certificate.name}' does not exist at path='#{certificate.key}'")
         elsif certificate.renewable?
-          @logger.debug("Considering cert='#{certificate.name}', remaining='#{certificate.remaining_lifetime}', renew_days='#{certificate.renew_days}' for renewal")
+          @logger.info("Considering cert='#{certificate.name}', remaining='#{certificate.remaining_lifetime}', renew_days='#{certificate.renew_days}' for renewal")
           certificates << certificate
         else
-          @logger.info("Won't process cert='#{certificate.name}', remaining='#{certificate.remaining_lifetime}', renew_days='#{certificate.renew_days}'.")
+          @logger.info("Won't process cert='#{certificate.name}', remaining='#{certificate.remaining_lifetime}', renew_days='#{certificate.renew_days}'")
         end
       else
         @logger.debug("Skipping #{certificate.name} from processing due to name restrictions.")
