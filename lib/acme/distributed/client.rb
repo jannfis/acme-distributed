@@ -4,10 +4,17 @@ require 'acme/distributed/challenge'
 
 require 'acme/distributed/connector'
 
-require 'acme/distributed/configuration_error'
+require 'acme/distributed/errors'
 
 class Acme::Distributed::Client
 
+  # Initializes a new client object
+  #
+  # @param config_path [String] Path to the YAML configuration for this client
+  # @param options [Acme::Distributed::Options] Options for this client
+  # @raise [TypeError] Invalid parameters passed
+  # @raise [Acme::Distributed::ConfigurationError] Invalid configuration passed
+  #
   def initialize(config_path, options)
     if not options.kind_of?(Acme::Distributed::Options)
       raise TypeError, "options must be subclass of Acme::Distributed::Options"

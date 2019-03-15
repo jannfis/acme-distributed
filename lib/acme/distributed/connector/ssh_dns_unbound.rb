@@ -1,11 +1,11 @@
 require 'net/ssh'
 require 'securerandom'
 
-require 'acme/distributed/logger'
-
-require 'acme/distributed/configuration_error'
-require 'acme/distributed/server_error'
 require 'acme/distributed/connector/ssh'
+
+require 'acme/distributed/logger'
+require 'acme/distributed/errors'
+
 
 # This connector provides fullfillment of DNS authorizations with the unbound
 # DNS server.

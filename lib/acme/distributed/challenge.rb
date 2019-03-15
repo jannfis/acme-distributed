@@ -1,11 +1,10 @@
 require 'openssl'
 require 'acme/client'
 
+require 'acme/distributed/errors'
 require 'acme/distributed/logger'
 require 'acme/distributed/endpoint'
 require 'acme/distributed/certificate'
-
-require 'acme/distributed/challenge_error'
 
 # XXX: This needs a little overhaul.
 #

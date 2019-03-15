@@ -1,5 +1,7 @@
 require 'optparse'
+
 require 'acme/distributed/options'
+require 'acme/distributed/errors'
 
 # Acme::Distributed::CommandLine
 #

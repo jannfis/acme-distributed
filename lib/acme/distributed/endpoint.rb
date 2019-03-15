@@ -1,4 +1,4 @@
-require 'acme/distributed/configuration_error'
+require 'acme/distributed/errors'
 
 # Acme::Distributed::Endpoint
 #

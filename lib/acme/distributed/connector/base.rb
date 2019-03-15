@@ -1,6 +1,6 @@
 require 'acme/distributed/logger'
 
-require 'acme/distributed/connector_error'
+require 'acme/distributed/errors'
 
 module Acme::Distributed::Connector; end
 

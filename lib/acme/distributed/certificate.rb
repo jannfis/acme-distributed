@@ -1,7 +1,8 @@
 require 'openssl'
 
 require 'acme/distributed/logger'
-require 'acme/distributed/configuration_error'
+
+require 'acme/distributed/errors'
 
 class Acme::Distributed::Certificate
   REQUIRED_CONFIG_KEYS = [ "subject", "path", "key" ]

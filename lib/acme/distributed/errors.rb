@@ -1,0 +1,5 @@
+require 'acme/distributed/error/challenge_error'
+require 'acme/distributed/error/command_line_error'
+require 'acme/distributed/error/configuration_error'
+require 'acme/distributed/error/connector_error'
+require 'acme/distributed/error/server_error'

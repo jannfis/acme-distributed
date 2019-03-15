@@ -1,5 +1,6 @@
 require 'net/ssh'
 
+require 'acme/distributed/errors'
 require 'acme/distributed/connector/base'
 
 # Implementaiton of SSH connector for deriving SSH based connectors. This class
