@@ -14,6 +14,11 @@ class Acme::Distributed::Connector::SSH < Acme::Distributed::Connector::Base
     super(name, config, options, defaults)
   end
 
+  # Establish SSH connection to the target server. If the connection is already
+  # established, and force_reconnect is not set to true, reuse the connection.
+  #
+  # @param force_reconnect [Boolean] Whether to force reconnect if connection already established
+  #
   def connect!(force_reconnect = false)
     if @ssh
       @logger.debug("SSH connection to server name='#{@name}', host=#{self.hostname} already established")
@@ -34,12 +39,18 @@ class Acme::Distributed::Connector::SSH < Acme::Distributed::Connector::Base
     end
   end
 
+  # Shutdown an already established connection to the target server.
+  #
   def disconnect!
     @logger.info("Terminating SSH connection to server name=#{@name}")
     @ssh.close
     @ssh = nil
   end
 
+  # Returns whether connection is established or not.
+  #
+  # @return [Boolean] true if connection is established, false if not.
+  #
   def connected?
     if @ssh
       return true

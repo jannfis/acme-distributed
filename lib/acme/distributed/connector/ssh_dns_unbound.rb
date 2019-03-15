@@ -18,12 +18,14 @@ class Acme::Distributed::Connector::SshDnsUnbound < Acme::Distributed::Connector
   # These keys must exist in the config hash
   REQUIRED_CONFIG_KEYS = [ "hostname", "username", "unbound_ctrl" ]
 
-  # Creates a new ChallengeServer instance
+  # Creates a new connector instance.
   #
   # @param name [String]
   # @param config [Hash]
   # @param options [Acme::Distributed::Options]
   # @param defaults [Hash]
+  # @raise [Acme::Distributed::ConfigurationError]
+  # @raise [StandardError]
   #
   def initialize(name, config, options, defaults)
     super(name, config, options, defaults)
@@ -31,8 +33,8 @@ class Acme::Distributed::Connector::SshDnsUnbound < Acme::Distributed::Connector
     validate!
   end
 
-  # Connect to the remote DNS server and check whether we can execute unbound's
-  # control program successfully.
+  # Connect to the remote DNS server via SSH and check whether we can execute
+  # unbound's control program successfully.
   #
   def connect!(force_reconnect = false)
     super(force_reconnect)
@@ -133,12 +135,22 @@ class Acme::Distributed::Connector::SshDnsUnbound < Acme::Distributed::Connector
 
   private
 
+  # Check whether we have a valid SSH connection to our challenge server.
+  # 
+  # @return nothing
+  # @raise [Acme::Distributed::Server] Raised when no connection exists
+  #
   def check_connection!
     if not @ssh
       raise Acme::Distributed::ServerError, "Challenge server name=#{self.name} is not connected."
     end
   end
 
+  # Validates the configuration for this connector.
+  #
+  # @return nothing
+  # @raise [Acme::Distributed::ConfigurationError] Raised when configuration is not valid
+  #
   def validate!
     if not @config.is_a?(Hash)
       raise Acme::Distributed::ConfigurationError, "Configuration for challenge server '#{@name}' is not a Hash"

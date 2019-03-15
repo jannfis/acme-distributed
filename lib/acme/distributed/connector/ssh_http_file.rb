@@ -40,15 +40,22 @@ class Acme::Distributed::Connector::SshHttpFile < Acme::Distributed::Connector::
   def create_challenge(subject, challenge_name, contents)
     check_connection!
 
+    # The challenge filename sent by the ACME API must match a certain pattern
+    # so that we can consider it valid.
+    #
     if challenge_name !~ /^\.well-known\/acme\-challenge\/[a-zA-Z0-9\_\-]+$/
       raise Acme::Distributed::ServerError, "Received malformed filename for authorization fullfilment (filename='#{challenge_name}')"
     end
 
+    # The contents of the challenge sent by the ACME API must match a certain
+    # pattern so that we can consider it valid.
+    #
     if contents !~ /^[a-zA-Z0-9\_\-\=\.]+$/
       raise Acme::Distributed::ServerError, "Received malformed contents for authorization (content=#{contents})"
     end
     
-    # Remember path to this challenge for later.
+    # Remember path to this challenge for later. We use the basename of the
+    # challenge path sent by ACME API, which we validated before.
     #
     challenge_path = self.acme_path + "/" + File.basename(challenge_name)
 
@@ -57,9 +64,15 @@ class Acme::Distributed::Connector::SshHttpFile < Acme::Distributed::Connector::
     if retval != "success"
       raise Acme::Distributed::ServerError, "Error creating challenge for subject '#{subject}' on server name=#{self.name}: #{retval}"
     end
+
+    # Remember the challenge path for later removal.
     @challenges << challenge_path
   end
 
+  # Remove a challenge that we have created earlier.
+  #
+  # @return [Boolean] True when challenge was removed, false if it couldn't be removed
+  # 
   def remove_challenge(challenge)
     check_connection!
     @logger.debug("Removing challenge file at #{challenge} on server=#{self.name}")
@@ -70,6 +83,10 @@ class Acme::Distributed::Connector::SshHttpFile < Acme::Distributed::Connector::
     return true
   end
 
+  # Remove all challenges that we created in the current run.
+  #
+  # @return [Integer] Number of challenges that could not be removed
+  #
   def remove_all_challenges
     errors = 0
     @challenges.each do |challenge|
@@ -83,6 +100,8 @@ class Acme::Distributed::Connector::SshHttpFile < Acme::Distributed::Connector::
   def name
     @name
   end
+
+  # XXX: The following methods could be implemented as simple attributes
 
   def username
     @config['username']
