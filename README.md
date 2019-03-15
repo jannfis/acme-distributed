@@ -37,6 +37,8 @@ The corner case implemented by this client is the separation of certificate orde
 * You do not want your private account key on your web servers
 * You want to centralize your Let's Encrypt certficate management and not have multiple hosts (i.e. your webservers) being responsible for that
 
+![Diagram](doc/acme-distributed-scheme.png)
+
 Please note that **acme-distributed** will not (nor will ever) deploy any certificates to your servers. This task is left to whatever configuration management or provisioning tools you might have in place.
 
 # Installation
