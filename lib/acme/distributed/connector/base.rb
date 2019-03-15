@@ -29,6 +29,12 @@ class Acme::Distributed::Connector::Base
     raise Acme::Distributed::ConnectorError, "#disconnect! is not implemented in derived class"
   end
 
+  # Create a challenge. This method must be implemented in the deriving class.
+  #
+  # @param subject [String] The DNS subject for the challenge
+  # @param challenge_name [String] The name of the challenge, as sent by ACME
+  # @param challenge_content [String] The content of the challenge as sent by ACME
+  #
   def create_challenge(subject, challenge_name, challenge_content)
     raise Acme::Distributed::ConnectorError, "#create_challenge is not implemented in derived class"
   end

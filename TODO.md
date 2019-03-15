@@ -2,7 +2,7 @@
 
 ## Functionality
 
-- Implement DNS challenges
+- ~~Implement DNS challenges~~
 - ~~Group servers for mapping certain certificates to certain challenge servers~~
 - ACME account management (new/modify/delete account)
 
