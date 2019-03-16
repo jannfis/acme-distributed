@@ -7,11 +7,12 @@ Gem::Specification.new do |spec|
   spec.version       = Acme::Distributed::VERSION
   spec.author        = ['jann@mistrust.net']
   spec.email         = ['jann@mistrust.net']
-  spec.summary       = 'Letsencrypt command line client'
+  spec.summary       = 'Letsencrypt client for distributed certificate ordering'
   spec.homepage      = 'http://github.com/jannfis/acme-distributed'
   spec.license       = 'Unlicense'
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.executables  << 'acme-distributed'
   spec.require_paths = ['lib']
 
   spec.required_ruby_version = '>= 2.5.0'
