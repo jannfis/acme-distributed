@@ -8,6 +8,19 @@ require 'acme/distributed/certificate'
 
 # XXX: This needs a little overhaul.
 #
+# This class is responsible for requesting and handling ACME challenges to
+# retrieve certificates in PEM format.
+#
+# Each certificate request is completed in the following steps:
+#
+# 1.  Request challenge(s) for given subject(s) at the ACME API
+# 2.  Set up challenge response(s) at target server(s)
+# 3.  Request validation/authorization for all challenge(s)
+# 4.  Finalize certificate order to retrieve certificate in PEM format
+# 
+# This class handles steps 1, 3 and 4. The setup in step 2 is left to the
+# pluggable connector infrastructure.
+#
 class Acme::Distributed::Challenge
 
   CHALLENGE_STATE_ERROR = -1

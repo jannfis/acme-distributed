@@ -184,6 +184,11 @@ class Acme::Distributed::Certificate
 
   private
 
+  # Validates configuration for this certificate. Needs the @config hash to be
+  # properly populated.
+  #
+  # @raise [Acme::Distributed::ConfigurationError] Invalid or incomplete configuration
+  #
   def validate!
     if not @config.is_a?(Hash)
       raise Acme::Distributed::ConfigurationError, "Configuration for certificate #{@name} is not a Hash"
