@@ -4,7 +4,7 @@ module Acme
 
     # Return extended version info
     def self.versioninfo
-      version = "Acme::Distributed version {{ version }} (using acme-client v{{ acme_version }} ({{ foo }})"
+      version = "Acme::Distributed version {{ version }} (using acme-client v{{ acme_version }})"
       Acme::Distributed::Util.expand_variables(version, { version: VERSION, acme_version: Acme::Client::VERSION }, { remove_unknown: false })
     end
 
