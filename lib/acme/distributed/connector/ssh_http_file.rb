@@ -91,6 +91,7 @@ class Acme::Distributed::Connector::SshHttpFile < Acme::Distributed::Connector::
       if not remove_challenge(challenge)
         errors += 1
       end
+      @challenges.delete(challenge)
     end
     return errors
   end
