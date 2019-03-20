@@ -196,22 +196,6 @@ class Acme::Distributed::Client
 
   private
 
-  # Expand all variables in configuration items.
-  # XXX: This needs some optimization.
-  #
-  def expand_variables!
-    @config.certificates.each do |cert_name, certificate|
-      if certificate.path =~ /\{\{\ *[a-z]+\ *\}\}/
-        @logger.debug("Performing variable replacement in PEM path for cert='#{cert_name}'")
-        while certificate.path.sub!(/\{\{\ *endpoint\ *\}\}/, @endpoint.name); end
-      end
-      if certificate.key =~ /\{\{\ *[a-z]+\ *\}\}/
-        @logger.debug("Performing variable replacement in key path for cert='#{cert_name}'")
-        while certificate.key.sub!(/\{\{\ *endpoint\ *\}\}/, @endpoint.name); end
-      end
-    end
-  end
-
   # Check which endpoint to use from the ones found in the YAML configuration.
   #
   # If an endpoint name was given on the command line, we use that. Otherwise,
