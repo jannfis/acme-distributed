@@ -28,6 +28,11 @@ class Acme::Distributed::Certificate
     validate!
   end
 
+  def replace_variables!(endpoint)
+    @config["key"] = Acme::Distributed::Util.expand_variables(@config["key"], { "endpoint" => endpoint.name })
+    @config["path"] = Acme::Distributed::Util.expand_variables(@config["path"], { "endpoint" => endpoint.name })
+  end
+
   # Returns the (symbolic) name of this certificate
   #
   # This is NOT the certificate's subject.

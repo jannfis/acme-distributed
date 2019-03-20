@@ -55,6 +55,15 @@ class Acme::Distributed::Client
     certificates = []
     @config.certificates.each do |cert_name, certificate|
       if @config.options.certificates.length == 0 || @config.options.certificates.include?(cert_name)
+        
+        # Replace all variables for the certificate currently processed.
+        #
+        certificate.replace_variables!(@endpoint)
+
+        # If the certificate's private key does not exist, create it when the
+        # appropriate option was set. If the option was not set, skip this
+        # certificate.
+        #
         if not certificate.key_exist?
           @logger.error("Private key for certificate='#{certificate.name}' does not exist at path='#{certificate.key}'")
         elsif certificate.renewable?
