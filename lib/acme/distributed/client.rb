@@ -44,7 +44,6 @@ class Acme::Distributed::Client
 
     @logger.info("Using a default renew_days value of #{@config.renew_days}")
 
-    expand_variables!
   end
 
   # Run the client after configuration is completed.
