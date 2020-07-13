@@ -32,7 +32,7 @@ class Acme::Distributed::Connector::SSH < Acme::Distributed::Connector::Base
 
     @logger.info("Establishing SSH connection to server name='#{@name}', host='#{self.hostname}', user '#{self.username}'")
     begin
-      @ssh = Net::SSH.start(self.hostname, self.username, timeout: 2, non_interactive: true)
+      @ssh = Net::SSH.start(self.hostname, self.username, port: @config['ssh_port'] || 22, timeout: 2, non_interactive: true)
     rescue Net::SSH::AuthenticationFailed => msg
       raise Acme::Distributed::ServerError, "Could not establish SSH connection to server name='#{@name}': #{msg}"
     rescue StandardError => msg

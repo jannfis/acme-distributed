@@ -1,5 +1,9 @@
 master
 - initial support for handling DNS challenges
+- ability to generate private keys if they do not exist yet, for both, ACME
+  accounts and certificates
+- added basic ACME account management functionality
+- improved logging & error handling
 
 v0.3.0 - 2018-12-15
 - add configurable number of retries for timeout events per endpoint

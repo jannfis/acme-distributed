@@ -66,7 +66,11 @@ class Acme::Distributed::CommandLine < Acme::Distributed::Options
   def parse_options
     @@optionparser = OptionParser.new do |opts|
       opts.banner =  "USAGE: #{@program} [options] <configuration.yaml>\n"
-      opts.banner += "       #{@program} -C <configuration.yaml>\n"
+      opts.banner += "       #{@program} -A <endpoint> <configuration.yaml>\n"
+      opts.banner += "       #{@program} -D <endpoint> <configuration.yaml>\n"
+      opts.banner += "       #{@program} -C <endpoint> <configuration.yaml>\n"
+      opts.banner += "\n"
+      opts.banner += "OPTIONS:\n\n"
       
       # XXX: -V does exit. Unsure whether this is correct here.
       opts.on("-V", "--version", "Display version number and exit") do
@@ -75,6 +79,22 @@ class Acme::Distributed::CommandLine < Acme::Distributed::Options
         STDERR.puts(Acme::Distributed.copyright)
         exit 1
       end
+
+      opts.on("-A, --create-account <endpoint>", String, "Create ACME account account for endpoint <endpoint>") do |endpoint|
+        @options[:endpoint] = endpoint
+        @options[:create_account] = true
+      end
+
+      opts.on("-D, --deactivate-account <endpoint>", String, "Deactivate ACME account for endpoint <endpoint>") do |endpoint|
+        @options[:endpoint] = endpoint
+        @options[:deactivate_account] = true
+      end
+
+      opts.on("-C, --change-account <endpoint>", String, "Update ACME account for endpoint <endpoint>") do |endpoint|
+        @options[:endpoint] = endpoint
+        @options[:change_account] = true
+      end
+
 
       # -e|--endpoint
       # specifies ACME endpoint name to use
@@ -97,9 +117,24 @@ class Acme::Distributed::CommandLine < Acme::Distributed::Options
         @options[:renew_days] = days
       end
 
-      opts.on("-C", "--check-config") do
-        @options[:check_config] = true
+      # -g|--generate-keys
+      #
+      # Will generate all certificate private keys with default options, if 
+      # they do not exist already.
+      #
+      opts.on("-g", "--generate-certificate-keys", "Generate certificate private keys (with default options) if they do not exist") do
+        @options[:generate_certificate_keys] = true
       end
+
+      # -G|--generate-account-keys
+      #
+      # Will generate all private keys used to associate with the configured
+      # ACME accounts, if the keys do not exist already.
+      #
+      opts.on("-G", "--generate-account-keys", "Generate account private keys (with default options) if they do not exist") do
+        @options[:generate_account_keys] = true
+      end
+
 
       opts.on("-L", "--log-level <level>", String, "Log level to use [DEBUG, INFO, WARN, ERROR]. Default is INFO.") do |level|
         case level.downcase

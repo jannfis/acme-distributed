@@ -5,6 +5,7 @@ require 'acme/distributed/challenge'
 require 'acme/distributed/connector'
 
 require 'acme/distributed/errors'
+require 'acme/distributed/account'
 
 class Acme::Distributed::Client
 
@@ -25,30 +26,67 @@ class Acme::Distributed::Client
     @options = options
 
     @endpoint = set_endpoint(options)
+    
+    # Create private key for account if key does not exist and key generation
+    # option was set. If key does not exist and generation option was not set,
+    # raise an error.
+    #
+    # Also, if we create an account key, we have to create the ACME account
+    # as well. 
+    #
     if not @endpoint.key_exist?
-      raise Acme::Distributed::ConfigurationError, "Private key for endpoint='#{@endpoint.name}' at path='#{@endpoint.private_key}' does not exist."
+      if @options.generate_account_keys? and @options.create_account?
+        @logger.info("Generating private account key for endpoint='#{@endpoint.name}' at path='#{@endpoint.private_key}'")
+        Acme::Distributed::Util.generate_private_key!(@endpoint.private_key)
+        #create_acme_account!(@endpoint)
+      else
+        raise Acme::Distributed::ConfigurationError, "Private key for endpoint='#{@endpoint.name}' at path='#{@endpoint.private_key}' does not exist."
+      end
     end
 
-    @logger.info("Using endpoint name='#{@endpoint.name}', uri='#{@endpoint.uri}'")
+  end
+
+  # Run the client with the requested action
+  #
+  # @return nothing
+  # @throw [Acme::Distributed::ConfigurationError] Invalid action configured
+  # @throw Various exceptions can be thrown from the underlying methods
+  #
+  def run
+    case @options.action
+    when Acme::Distributed::Options::ACTION_REQUEST_CERT
+      @logger.info("Starting certificate(s) request")
+      request_certificates!
+    when Acme::Distributed::Options::ACTION_CREATE_ACCOUNT
+      @logger.info("Creating new ACME account")
+      create_acme_account!(@endpoint)
+    when Acme::Distributed::Options::ACTION_DISABLE_ACCOUNT
+      @logger.info("Disabling ACME account")
+    when Acme::Distributed::Options::ACTION_CHANGE_ACCOUNT
+      @logger.info("Changing ACME account")
+    else
+      raise Acme::Distributed::ConfigurationError, "Unknown action: #{@options.action.to_s}"
+    end
+  end
+
+  # The main loop for requesting certificates.
+  #
+  def request_certificates!
+   
+    @logger.info("Using endpoint name='#{@endpoint.name}', uri='#{@endpoint.uri}', key='#{@endpoint.private_key}'")
     @logger.info("Configured #{@config.connectors.keys.length} connectors.")
 
-    if not options.renew_days
+    if not @options.renew_days
       if not @config.default(:renew_days)
         @config.renew_days = 30
       else
         @config.renew_days = @config.default(:renew_days)
       end
     else
-      @config.renew_days = options.renew_days
+      @config.renew_days = @options.renew_days
     end
 
     @logger.info("Using a default renew_days value of #{@config.renew_days}")
-
-  end
-
-  # Run the client after configuration is completed.
-  #
-  def run
 
     # First, gather which certificates to process in this run.
     #
@@ -65,8 +103,21 @@ class Acme::Distributed::Client
         # certificate.
         #
         if not certificate.key_exist?
-          @logger.error("Private key for certificate='#{certificate.name}' does not exist at path='#{certificate.key}'")
-        elsif certificate.renewable?
+          if @options.generate_certificate_keys?
+            @logger.info("Generating private key for certificate='#{certificate.name}' at path='#{certificate.key}'")
+            begin
+              Acme::Distributed::Util.generate_private_key!(certificate.key)
+            rescue Acme::Distributed::ConfigurationError => msg
+              @logger.error("Could not generate private key at path='#{certificate.key}': #{msg}")
+              next
+            end
+          else
+            @logger.error("Private key for certificate='#{certificate.name}' does not exist at path='#{certificate.key}', skipping this certificate.")
+            next
+          end
+        end
+
+        if certificate.renewable?
           @logger.info("Considering cert='#{certificate.name}', remaining='#{certificate.remaining_lifetime}', renew_days='#{certificate.renew_days}' for renewal")
           certificates << certificate
         else
@@ -194,6 +245,8 @@ class Acme::Distributed::Client
       end 
     end
 
+    # Terminate all connectors which have an established connection.
+    #
     certificates.each do |certificate|
       @config.connectors[certificate.connector_group].each do |connector_name, connector|
         if connector.connected?
@@ -201,6 +254,11 @@ class Acme::Distributed::Client
         end
       end
     end
+
+  end
+
+  def create_acme_account!(endpoint)
+    Acme::Distributed::Account.create(endpoint, nil)
   end
 
   private

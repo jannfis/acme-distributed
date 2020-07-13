@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.3', '>= 3.3.0'
 
-  spec.add_runtime_dependency 'acme-client', '~> 2.0', '>= 2.0.1'
+  spec.add_runtime_dependency 'acme-client', '~> 2.0', '>= 2.0.5'
   spec.add_runtime_dependency 'net-ssh', '~> 5.0', '>= 5.0.0'
   spec.add_runtime_dependency 'openssl', '~> 2.0', '>= 2.0.0'
   spec.add_runtime_dependency 'logger', '~> 1.3', '>= 1.3.0'

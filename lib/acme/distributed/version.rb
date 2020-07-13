@@ -11,7 +11,7 @@ module Acme
     # Return copyright information
     def self.copyright
       "This software is put into the Public Domain under the terms of Unlicense\n" +
-      "Please refer to https://www.unlicense.org for more details."
+      "Please refer to https://github.com/jannfis/acme-distributed and https://www.unlicense.org for more details."
     end
 
   end
