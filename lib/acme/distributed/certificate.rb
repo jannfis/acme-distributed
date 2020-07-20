@@ -25,6 +25,9 @@ class Acme::Distributed::Certificate
     # Cache value for certificate's remaining lifetime.
     @remaining_lifetime = nil
 
+    # Is this certificate enabled?
+    @enabled = true
+
     validate!
   end
 
@@ -130,6 +133,23 @@ class Acme::Distributed::Certificate
     @config["connector_group"] = value
   end
 
+  # Returns whether this certificate is enabled
+  def enabled?
+    return @enabled
+  end
+
+  # Enables processing of the certificate
+  def enable!
+    @logger.debug("Enabling certificate #{@name}")
+    @enabled = true
+  end
+
+  # Disables processing of the certificate
+  def disable!
+    @logger.debug("Disabling certificate #{@name}")
+    @enabled = false
+  end
+
   # Returns true if the certificate's PEM exists on the local system, otherwise
   # returns false.
   #
@@ -163,7 +183,7 @@ class Acme::Distributed::Certificate
   #
   def renewable?
     if self.pem_exist?
-      if remaining_lifetime <= renew_days
+      if remaining_lifetime <= renew_days or renew_days == 0
         return true
       else
         return false
@@ -201,6 +221,18 @@ class Acme::Distributed::Certificate
     REQUIRED_CONFIG_KEYS.each do |key|
       if not @config.keys.include?(key)
         raise Acme::Distributed::ConfigurationError, "Incomplete configuration for certificate '#{@name}': Property '#{key}' is missing"
+      end
+    end
+
+    # Whether this certificate is enabled for processing
+    if not @config["enabled"].nil?
+      case @config["enabled"].to_s.downcase
+      when "true", "yes"
+        self.enable!
+      when "false", "no"
+        self.disable!
+      else
+        raise Acme::Distributed::ConfigurationError, "Cert #{@name}: Wrong value for property 'enabled': must be true or false"
       end
     end
 

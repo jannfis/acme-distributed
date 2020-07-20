@@ -211,6 +211,16 @@ class Acme::Distributed::Config
         if not VALID_AUTHORIZATION_TYPES.include?(authorization_type)
           raise Acme::Distributed::ConfigurationError, "Connector #{connector_class.to_s} specifies #{authorization_type} as authorization type, but this is not a supported type"
         end
+        if not connector["enabled"].nil?
+          case connector["enabled"].to_s.downcase
+          when "false", "no"
+            _connector.disable!
+          when "true", "yes"
+            _connector.enable!
+          else
+            raise Acme::Distributed::ConfigurationError, "Connector #{connector['name']}: Invalid value for property 'enabled'"
+          end
+        end
         connectors[group_name][connector["name"]] = _connector
         @logger.debug("Added connector name='#{_connector.name}', hostname='#{_connector.hostname}' to group #{group_type}")
       end

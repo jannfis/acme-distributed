@@ -21,7 +21,7 @@ class Acme::Distributed::Connector::SSH < Acme::Distributed::Connector::Base
   # @param force_reconnect [Boolean] Whether to force reconnect if connection already established
   #
   def connect!(force_reconnect = false)
-    if @ssh
+    if self.connected?
       @logger.debug("SSH connection to server name='#{@name}', host=#{self.hostname} already established")
       if not force_reconnect
         return

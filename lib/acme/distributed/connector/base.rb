@@ -16,6 +16,7 @@ class Acme::Distributed::Connector::Base
     @config = config
     @options = options
     @defaults = defaults || {}
+    @enabled = true
   end
 
   # The following are dummy methods that raise exceptions. These are the
@@ -50,4 +51,17 @@ class Acme::Distributed::Connector::Base
   def authorization_type
     raise Acme::Distributed::ConnectorError, "#authorization_type is not implemented in derived class"
   end
+
+  def enabled?
+    return @enabled
+  end
+
+  def enable!
+    @enabled = true
+  end
+
+  def disable!
+    @enabled = false
+  end
+
 end

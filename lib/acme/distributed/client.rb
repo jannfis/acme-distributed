@@ -62,8 +62,10 @@ class Acme::Distributed::Client
       create_acme_account!(@endpoint)
     when Acme::Distributed::Options::ACTION_DISABLE_ACCOUNT
       @logger.info("Disabling ACME account")
+      # TODO: Implement
     when Acme::Distributed::Options::ACTION_CHANGE_ACCOUNT
       @logger.info("Changing ACME account")
+      # TODO: Implement
     else
       raise Acme::Distributed::ConfigurationError, "Unknown action: #{@options.action.to_s}"
     end
@@ -93,6 +95,10 @@ class Acme::Distributed::Client
     certificates = []
     @config.certificates.each do |cert_name, certificate|
       if @config.options.certificates.length == 0 || @config.options.certificates.include?(cert_name)
+        if not certificate.enabled?
+          @logger.info("Skipping disabled certificate #{certificate.name}")
+          next
+        end
         
         # Replace all variables for the certificate currently processed.
         #
@@ -137,7 +143,9 @@ class Acme::Distributed::Client
       certificates.each do |certificate|
         @logger.debug("Going to connect all connectors of type '#{certificate.connector_group}'")
         @config.connectors[certificate.connector_group].each do |connector_name, connector|
-          connector.connect!
+          if connector.enabled? and not connector.connected?
+            connector.connect!
+          end
         end
       end
     end
@@ -183,6 +191,7 @@ class Acme::Distributed::Client
         #
         challenge.authorizations.each do |authorization|
           @config.connectors[certificate.connector_group].each do |connector_name, connector|
+            next if not connector.connected?
             authorization_type = connector.authorization_type
             case connector.authorization_type
             when "http-01"
