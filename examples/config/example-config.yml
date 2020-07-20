@@ -38,6 +38,8 @@ certificates:
     key: /etc/acme-deploy/{{endpoint}}/keys/secure.example.com.key
     path: /etc/acme-deploy/{{endpoint}}/certs/secure.example.com.pem
     renew_days: 30
+    connector_group: frontend_unbound
+    enabled: false
 
 # Define connector groups.
 #
@@ -71,6 +73,16 @@ connector_groups:
       username: acme
       ssh_port: 22
       acme_path: /var/www/acme
+
+  frontend_unbound:
+    type: ssh_dns_unbound
+    connectors:
+    - name: frontend_ns_1
+      hostname: ns.example.com
+      username: acme
+      ssh_port: 22
+      unbound_ctrl: /usr/sbin/unbound-control
+      enabled: no
 
 # Set some sane defaults for your environment here.
 defaults:
