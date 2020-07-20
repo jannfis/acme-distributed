@@ -11,7 +11,10 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'http://github.com/jannfis/acme-distributed'
   spec.license       = 'Unlicense'
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  git_bin = `which git 2>/dev/null`
+  if git_bin != ""
+    spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  end
   spec.executables  << 'acme-distributed'
   spec.require_paths = ['lib']
 
