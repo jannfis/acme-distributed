@@ -2,6 +2,8 @@
 
 ## unreleased
 
+## v0.4.0 - 2020-07-20
+
 * initial support for handling DNS challenges
 * ability to generate private keys if they do not exist yet, for both, ACME accounts and certificates
 * added basic ACME account management functionality
